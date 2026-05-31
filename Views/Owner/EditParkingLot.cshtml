@@ -1,0 +1,20 @@
+@model ParkingReservation.Models.ViewModels.ParkingLotFormViewModel
+@{
+    ViewData["Title"] = "Edit Parking Lot";
+}
+
+<div class="owner-shell">
+    <div class="owner-header">
+        <div>
+            <div class="owner-kicker">Location details</div>
+            <h1 class="owner-title">Edit parking lot</h1>
+            <p class="owner-subtitle">Update the details customers and admins see.</p>
+        </div>
+    </div>
+</div>
+
+<partial name="_ParkingLotForm" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

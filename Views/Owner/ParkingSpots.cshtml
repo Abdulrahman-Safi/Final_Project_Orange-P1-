@@ -1,0 +1,89 @@
+@model ParkingLot
+@{
+    ViewData["Title"] = "Parking Spots";
+}
+
+<div class="owner-shell">
+    <div class="owner-header">
+        <div>
+            <div class="owner-kicker">Spot management</div>
+            <h1 class="owner-title">@Model.Name spots</h1>
+            <p class="owner-subtitle">@Model.Address</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" asp-action="Dashboard">Back</a>
+            <a class="btn owner-primary-btn" asp-action="CreateParkingSpot" asp-route-parkingLotId="@Model.Id">Add spot</a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="owner-panel">
+        <div class="owner-panel-header">
+            <h2 class="owner-panel-title">Parking spots</h2>
+        </div>
+
+        @if (!Model.ParkingSpots.Any())
+        {
+            <div class="owner-empty">
+                <div class="owner-empty-title">No spots have been added</div>
+                <p class="owner-empty-text">Add numbered spots so customers can reserve a specific place.</p>
+                <a class="btn owner-primary-btn" asp-action="CreateParkingSpot" asp-route-parkingLotId="@Model.Id">Add spot</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover owner-table">
+                    <thead>
+                        <tr>
+                            <th>Spot number</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th class="text-end">Change status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var spot in Model.ParkingSpots)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@spot.SpotNumber</td>
+                            <td>@spot.SpotType</td>
+                            <td><span class="owner-status @GetSpotStatusClass(spot.Status)">@spot.Status</span></td>
+                            <td class="text-end">
+                                <form asp-action="ChangeSpotStatus" method="post" class="d-inline-flex gap-2">
+                                    <input type="hidden" name="id" value="@spot.Id" />
+                                    <select name="status" class="form-select form-select-sm">
+                                        @foreach (var status in Enum.GetValues<ParkingSpotStatus>())
+                                        {
+                                            <option value="@status" selected="@(status == spot.Status)">@status</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    private static string GetSpotStatusClass(ParkingSpotStatus status)
+    {
+        return status switch
+        {
+            ParkingSpotStatus.Available => "owner-status-available",
+            ParkingSpotStatus.Reserved => "owner-status-reserved",
+            ParkingSpotStatus.Occupied => "owner-status-occupied",
+            ParkingSpotStatus.Maintenance => "owner-status-maintenance",
+            _ => "owner-status-maintenance"
+        };
+    }
+}

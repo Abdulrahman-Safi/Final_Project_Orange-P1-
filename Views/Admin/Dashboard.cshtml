@@ -1,0 +1,135 @@
+@model ParkingReservation.Models.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="page-shell">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">Admin Dashboard</h1>
+            <p class="dashboard-subtitle">Review parking lots and manage approval status.</p>
+        </div>
+        @if (Model.SelectedStatus.HasValue)
+        {
+            <a class="btn btn-outline-secondary" asp-action="Dashboard">Clear filter</a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg">
+            <a class="metric-card" asp-action="Dashboard">
+                <div class="metric-label">Total</div>
+                <div class="metric-value">@Model.TotalParkingLotsCount</div>
+            </a>
+        </div>
+        <div class="col-6 col-lg">
+            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Pending">
+                <div class="metric-label">Pending</div>
+                <div class="metric-value">@Model.PendingParkingLotsCount</div>
+            </a>
+        </div>
+        <div class="col-6 col-lg">
+            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Approved">
+                <div class="metric-label">Approved</div>
+                <div class="metric-value">@Model.ApprovedParkingLotsCount</div>
+            </a>
+        </div>
+        <div class="col-6 col-lg">
+            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Rejected">
+                <div class="metric-label">Rejected</div>
+                <div class="metric-value">@Model.RejectedParkingLotsCount</div>
+            </a>
+        </div>
+        <div class="col-6 col-lg">
+            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Suspended">
+                <div class="metric-label">Suspended</div>
+                <div class="metric-value">@Model.SuspendedParkingLotsCount</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="content-panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Parking lots</h2>
+            @if (Model.SelectedStatus.HasValue)
+            {
+                <span class="status-pill @GetStatusClass(Model.SelectedStatus.Value)">@Model.SelectedStatus</span>
+            }
+        </div>
+
+        @if (!Model.ParkingLots.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-title">No parking lots found</div>
+                <p class="empty-state-text">Parking lots will appear here after owners add them.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-dashboard">
+                    <thead>
+                        <tr>
+                            <th>Parking lot</th>
+                            <th>Owner</th>
+                            <th>City</th>
+                            <th>Spots</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var parkingLot in Model.ParkingLots)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@parkingLot.Name</div>
+                                <div class="small text-muted">@parkingLot.Address</div>
+                            </td>
+                            <td>
+                                <div>@parkingLot.Owner?.FullName</div>
+                                <div class="small text-muted">@parkingLot.Owner?.Email</div>
+                            </td>
+                            <td>@parkingLot.City</td>
+                            <td>@parkingLot.ParkingSpots.Count</td>
+                            <td><span class="status-pill @GetStatusClass(parkingLot.Status)">@parkingLot.Status</span></td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="ParkingLotDetails" asp-route-id="@parkingLot.Id">Details</a>
+                                <form asp-action="ChangeParkingLotStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@parkingLot.Id" />
+                                    <input type="hidden" name="status" value="@ParkingLotStatus.Approved" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
+                                </form>
+                                <form asp-action="ChangeParkingLotStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@parkingLot.Id" />
+                                    <input type="hidden" name="status" value="@ParkingLotStatus.Rejected" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    private static string GetStatusClass(ParkingLotStatus status)
+    {
+        return status switch
+        {
+            ParkingLotStatus.Pending => "status-pending",
+            ParkingLotStatus.Approved => "status-approved",
+            ParkingLotStatus.Rejected => "status-rejected",
+            ParkingLotStatus.Suspended => "status-suspended",
+            _ => "status-suspended"
+        };
+    }
+}

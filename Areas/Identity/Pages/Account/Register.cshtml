@@ -1,0 +1,70 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "إنشاء حساب";
+}
+
+<div class="auth-shell">
+    <section class="auth-card">
+        <div class="auth-copy">
+            <div class="auth-kicker">ابدأ الآن</div>
+            <h1>أنشئ حسابك في منصة حجز المواقف</h1>
+            <p>اختر نوع الحساب المناسب لك. المستخدم يحجز المواقف، وصاحب المصف يدير المصفات والمواقف الخاصة به.</p>
+        </div>
+
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="auth-form">
+            <h2>إنشاء حساب</h2>
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input.FullName" class="form-label">الاسم الكامل</label>
+                <input asp-for="Input.FullName" class="form-control auth-input" autocomplete="name" aria-required="true" placeholder="مثال: أحمد محمد" />
+                <span asp-validation-for="Input.FullName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label">البريد الإلكتروني</label>
+                <input asp-for="Input.Email" class="form-control auth-input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.PhoneNumber" class="form-label">رقم الهاتف</label>
+                <input asp-for="Input.PhoneNumber" class="form-control auth-input" autocomplete="tel" placeholder="07xxxxxxxx" />
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Role" class="form-label">نوع الحساب</label>
+                <select asp-for="Input.Role" class="form-select auth-input" aria-required="true">
+                    <option value="@UserRoles.User">مستخدم</option>
+                    <option value="@UserRoles.Owner">صاحب مصف</option>
+                </select>
+                <span asp-validation-for="Input.Role" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label">كلمة المرور</label>
+                <input asp-for="Input.Password" class="form-control auth-input" autocomplete="new-password" aria-required="true" placeholder="••••••••" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Input.ConfirmPassword" class="form-label">تأكيد كلمة المرور</label>
+                <input asp-for="Input.ConfirmPassword" class="form-control auth-input" autocomplete="new-password" aria-required="true" placeholder="••••••••" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button id="registerSubmit" type="submit" class="btn auth-submit">إنشاء الحساب</button>
+
+            <p class="auth-switch">
+                لديك حساب؟
+                <a asp-area="Identity" asp-page="/Account/Login">سجل الدخول</a>
+            </p>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

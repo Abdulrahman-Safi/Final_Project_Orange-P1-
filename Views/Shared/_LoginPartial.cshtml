@@ -1,0 +1,27 @@
+@using Microsoft.AspNetCore.Identity
+@using ParkingReservation.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav site-auth">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item">
+        <a class="nav-link site-user-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">@User.Identity?.Name</a>
+    </li>
+    <li class="nav-item">
+        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button type="submit" class="btn site-auth-btn site-auth-ghost">تسجيل الخروج</button>
+        </form>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="btn site-auth-btn site-auth-primary" asp-area="Identity" asp-page="/Account/Register">إنشاء حساب</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn site-auth-btn site-auth-ghost" asp-area="Identity" asp-page="/Account/Login">تسجيل الدخول</a>
+    </li>
+}
+</ul>

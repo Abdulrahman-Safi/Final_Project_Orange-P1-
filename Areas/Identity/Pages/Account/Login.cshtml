@@ -1,0 +1,48 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+}
+
+<div class="auth-shell">
+    <section class="auth-card auth-card-compact">
+        <div class="auth-copy">
+            <div class="auth-kicker">أهلاً بعودتك</div>
+            <h1>سجّل دخولك لإدارة حجوزاتك</h1>
+            <p>ادخل إلى حسابك لمتابعة المصفات، إدارة المواقف، أو مراجعة الطلبات حسب صلاحيتك.</p>
+        </div>
+
+        <form id="account" method="post" class="auth-form">
+            <h2>تسجيل الدخول</h2>
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label">البريد الإلكتروني</label>
+                <input asp-for="Input.Email" class="form-control auth-input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label">كلمة المرور</label>
+                <input asp-for="Input.Password" class="form-control auth-input" autocomplete="current-password" aria-required="true" placeholder="••••••••" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-check auth-check mb-4">
+                <input class="form-check-input" asp-for="Input.RememberMe" />
+                <label class="form-check-label" asp-for="Input.RememberMe">تذكرني</label>
+            </div>
+
+            <button id="login-submit" type="submit" class="btn auth-submit">تسجيل الدخول</button>
+
+            <p class="auth-switch">
+                لا تملك حساباً؟
+                <a asp-area="Identity" asp-page="/Account/Register" asp-route-returnUrl="@Model.ReturnUrl">أنشئ حساباً</a>
+            </p>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

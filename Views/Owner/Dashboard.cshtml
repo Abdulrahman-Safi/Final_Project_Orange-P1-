@@ -1,0 +1,119 @@
+@model ParkingReservation.Models.ViewModels.OwnerDashboardViewModel
+@{
+    ViewData["Title"] = "Owner Dashboard";
+}
+
+<div class="owner-shell">
+    <div class="owner-header">
+        <div>
+            <div class="owner-kicker">Parking owner</div>
+            <h1 class="owner-title">Owner Dashboard</h1>
+            <p class="owner-subtitle">Manage your parking lots, spots, and live availability.</p>
+        </div>
+        <a class="btn owner-primary-btn" asp-action="CreateParkingLot">Add parking lot</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="owner-metric">
+                <div class="owner-metric-label">Parking lots</div>
+                <div class="owner-metric-value">@Model.ParkingLotsCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="owner-metric">
+                <div class="owner-metric-label">Total spots</div>
+                <div class="owner-metric-value">@Model.ParkingSpotsCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="owner-metric">
+                <div class="owner-metric-label">Available spots</div>
+                <div class="owner-metric-value">@Model.AvailableSpotsCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="owner-metric">
+                <div class="owner-metric-label">Active reservations</div>
+                <div class="owner-metric-value">@Model.ActiveReservationsCount</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="owner-panel">
+        <div class="owner-panel-header">
+            <h2 class="owner-panel-title">Your parking lots</h2>
+        </div>
+
+        @if (!Model.ParkingLots.Any())
+        {
+            <div class="owner-empty">
+                <div class="owner-empty-title">No parking lots yet</div>
+                <p class="owner-empty-text">Add your first parking lot so the admin can review it.</p>
+                <a class="btn owner-primary-btn" asp-action="CreateParkingLot">Add parking lot</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover owner-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>City</th>
+                            <th>Hourly rate</th>
+                            <th>Status</th>
+                            <th>Spots</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var parkingLot in Model.ParkingLots)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@parkingLot.Name</div>
+                                <div class="small text-muted">@parkingLot.Address</div>
+                            </td>
+                            <td>@parkingLot.City</td>
+                            <td>@parkingLot.HourlyRate.ToString("0.00")</td>
+                            <td>
+                                <span class="owner-status @GetLotStatusClass(parkingLot.Status)">@parkingLot.Status</span>
+                            </td>
+                            <td>
+                                @parkingLot.ParkingSpots.Count
+                                <span class="text-muted small">
+                                    (@parkingLot.ParkingSpots.Count(spot => spot.Status == ParkingSpotStatus.Available) available)
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="ParkingSpots" asp-route-parkingLotId="@parkingLot.Id">Spots</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="EditParkingLot" asp-route-id="@parkingLot.Id">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    private static string GetLotStatusClass(ParkingLotStatus status)
+    {
+        return status switch
+        {
+            ParkingLotStatus.Pending => "owner-status-pending",
+            ParkingLotStatus.Approved => "owner-status-approved",
+            ParkingLotStatus.Rejected => "owner-status-rejected",
+            ParkingLotStatus.Suspended => "owner-status-suspended",
+            _ => "owner-status-suspended"
+        };
+    }
+}

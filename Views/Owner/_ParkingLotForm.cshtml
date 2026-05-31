@@ -1,0 +1,65 @@
+@model ParkingReservation.Models.ViewModels.ParkingLotFormViewModel
+
+<div class="owner-shell">
+    <div class="owner-form-panel">
+        <form method="post" class="row g-3">
+            <input asp-for="Id" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="col-md-6">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="City" class="form-label"></label>
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Address" class="form-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="OpeningTime" class="form-label"></label>
+                <input asp-for="OpeningTime" class="form-control" type="time" />
+                <span asp-validation-for="OpeningTime" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="ClosingTime" class="form-label"></label>
+                <input asp-for="ClosingTime" class="form-control" type="time" />
+                <span asp-validation-for="ClosingTime" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="HourlyRate" class="form-label"></label>
+                <input asp-for="HourlyRate" class="form-control" />
+                <span asp-validation-for="HourlyRate" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Coordinates</label>
+                <div class="input-group">
+                    <input asp-for="Latitude" class="form-control" placeholder="Lat" />
+                    <input asp-for="Longitude" class="form-control" placeholder="Lng" />
+                </div>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn owner-primary-btn">Save</button>
+                <a class="btn btn-outline-secondary" asp-action="Dashboard">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

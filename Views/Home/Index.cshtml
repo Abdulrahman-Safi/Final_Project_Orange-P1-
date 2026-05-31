@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "الرئيسية";
+}
+
+<div class="home-shell">
+    <section class="home-hero">
+        <div class="home-hero-content">
+            <div class="home-kicker">منصة ذكية لحجز المواقف</div>
+            <h1 class="home-title">احجز موقفك قبل ما توصل.</h1>
+            <p class="home-subtitle">
+                منصة تجمع المستخدمين وأصحاب المصفات والإدارة في مكان واحد. تصفح المصفات المعتمدة، تابع حالة المواقف مباشرة، ونظّم الحجوزات بسهولة.
+            </p>
+            <div class="home-actions">
+                <a class="btn home-primary-btn" asp-controller="ParkingLots" asp-action="Index">تصفح المصفات</a>
+                @if (!User.Identity?.IsAuthenticated ?? true)
+                {
+                    <a class="btn btn-outline-secondary" asp-area="Identity" asp-page="/Account/Register">إنشاء حساب</a>
+                }
+            </div>
+        </div>
+        <div class="home-visual" aria-hidden="true">
+            <div class="home-lot">
+                <div class="home-lot-header">
+                    <div>
+                        <span>مصف وسط المدينة</span>
+                        <small>توفر مباشر</small>
+                    </div>
+                    <strong>6 متاحة</strong>
+                </div>
+                <div class="home-spot-grid">
+                    <span class="home-spot available">A1</span>
+                    <span class="home-spot reserved">A2</span>
+                    <span class="home-spot available">A3</span>
+                    <span class="home-spot occupied">A4</span>
+                    <span class="home-spot available">B1</span>
+                    <span class="home-spot available">B2</span>
+                    <span class="home-spot reserved">B3</span>
+                    <span class="home-spot available">B4</span>
+                </div>
+                <div class="home-lot-footer">
+                    <span>12:00 ظهراً - 10:00 مساءً</span>
+                    <strong>2.50 / ساعة</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-stats" aria-label="Platform highlights">
+        <div>
+            <strong>مصفات معتمدة فقط</strong>
+            <span>الأدمن يراجع كل مصف قبل أن يظهر للمستخدمين.</span>
+        </div>
+        <div>
+            <strong>حالة المواقف مباشرة</strong>
+            <span>صاحب المصف يقدر يحدد إذا الموقف متاح أو محجوز أو مشغول أو تحت الصيانة.</span>
+        </div>
+        <div>
+            <strong>حجز موقف محدد</strong>
+            <span>المستخدم يختار الموقف نفسه بدل الحجز العشوائي.</span>
+        </div>
+    </section>
+
+    <section class="home-paths">
+        <div class="home-path-card">
+            <div class="home-path-label">للمستخدمين</div>
+            <h2>احجز موقفك</h2>
+            <p>تصفح المصفات المعتمدة، قارن التوفر، واختر الموقف المناسب لك.</p>
+            <a asp-controller="ParkingLots" asp-action="Index">عرض المصفات</a>
+        </div>
+        <div class="home-path-card">
+            <div class="home-path-label">لأصحاب المصفات</div>
+            <h2>أدر مصفاتك</h2>
+            <p>أضف المصفات والمواقف، وحدّث حالة كل موقف حسب الواقع.</p>
+            <a asp-controller="Owner" asp-action="Dashboard">فتح لوحة المالك</a>
+        </div>
+        <div class="home-path-card">
+            <div class="home-path-label">للإدارة</div>
+            <h2>راجع الطلبات</h2>
+            <p>وافق على المصفات أو ارفضها أو علّقها قبل إتاحتها للحجز.</p>
+            <a asp-controller="Admin" asp-action="Dashboard">فتح لوحة الأدمن</a>
+        </div>
+    </section>
+</div>

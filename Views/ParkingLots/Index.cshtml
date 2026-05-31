@@ -1,0 +1,53 @@
+@model IEnumerable<ParkingLot>
+@{
+    ViewData["Title"] = "Parking Lots";
+}
+
+<div class="mb-4">
+    <h1 class="h3 mb-1">Available parking lots</h1>
+    <p class="text-muted mb-0">Choose an approved parking lot and view its available spots.</p>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No approved parking lots are available yet.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var parkingLot in Model)
+        {
+            var availableSpots = parkingLot.ParkingSpots.Count(spot =>
+                spot.IsActive && spot.Status == ParkingSpotStatus.Available);
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between gap-3">
+                            <div>
+                                <h2 class="h5 mb-1">@parkingLot.Name</h2>
+                                <div class="text-muted small">@parkingLot.City</div>
+                            </div>
+                            <span class="badge bg-success align-self-start">@availableSpots available</span>
+                        </div>
+
+                        <p class="mt-3 mb-2">@parkingLot.Address</p>
+                        <div class="text-muted small mb-3">
+                            @parkingLot.OpeningTime.ToString(@"hh\:mm") - @parkingLot.ClosingTime.ToString(@"hh\:mm")
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-semibold">@parkingLot.HourlyRate.ToString("0.00")</span>
+                                <span class="text-muted">/ hour</span>
+                            </div>
+                            <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@parkingLot.Id">View spots</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
