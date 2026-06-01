@@ -1,83 +1,290 @@
 @{
     ViewData["Title"] = "الرئيسية";
+    ViewData["FullWidth"] = true;
 }
 
-<div class="home-shell">
-    <section class="home-hero">
-        <div class="home-hero-content">
-            <div class="home-kicker">منصة ذكية لحجز المواقف</div>
-            <h1 class="home-title">احجز موقفك قبل ما توصل.</h1>
-            <p class="home-subtitle">
-                منصة تجمع المستخدمين وأصحاب المصفات والإدارة في مكان واحد. تصفح المصفات المعتمدة، تابع حالة المواقف مباشرة، ونظّم الحجوزات بسهولة.
+<!-- ═══════════════════════════════════════════════ HERO ═══ -->
+<section class="lp-hero">
+    <div class="lp-orb lp-orb-1"></div>
+    <div class="lp-orb lp-orb-2"></div>
+    <div class="lp-orb lp-orb-3"></div>
+
+    <div class="lp-hero-inner">
+        <!-- Text side -->
+        <div class="lp-hero-content">
+            <div class="lp-hero-badge">
+                <i class="bi bi-shield-check-fill"></i>
+                منصة حجز مواقف ذكية ومعتمدة
+            </div>
+            <h1 class="lp-hero-title">
+                احجز موقفك<br>
+                <em>قبل ما توصل</em>
+            </h1>
+            <p class="lp-hero-subtitle">
+                لا تضيّع وقتك في البحث عن موقف. تصفح المصفات المعتمدة،
+                اختر الموقف المناسب، وأكّد حجزك في ثوانٍ من أي مكان.
             </p>
-            <div class="home-actions">
-                <a class="btn home-primary-btn" asp-controller="ParkingLots" asp-action="Index">تصفح المصفات</a>
-                @if (!User.Identity?.IsAuthenticated ?? true)
+            <div class="lp-hero-actions">
+                <a class="lp-btn-primary" asp-controller="ParkingLots" asp-action="Index">
+                    <i class="bi bi-search"></i> ابحث عن موقف الآن
+                </a>
+                @if (!(User.Identity?.IsAuthenticated ?? false))
                 {
-                    <a class="btn btn-outline-secondary" asp-area="Identity" asp-page="/Account/Register">إنشاء حساب</a>
+                    <a class="lp-btn-ghost" asp-area="Identity" asp-page="/Account/Register">
+                        <i class="bi bi-person-plus"></i> إنشاء حساب مجاني
+                    </a>
                 }
             </div>
+            <div class="lp-hero-trust">
+                <span><i class="bi bi-check-circle-fill text-success"></i> مجاني للتسجيل</span>
+                <span><i class="bi bi-check-circle-fill text-success"></i> لا يلزم بطاقة</span>
+                <span><i class="bi bi-check-circle-fill text-success"></i> مصفات معتمدة</span>
+            </div>
         </div>
-        <div class="home-visual" aria-hidden="true">
-            <div class="home-lot">
-                <div class="home-lot-header">
+
+        <!-- Visual side: floating parking card -->
+        <div class="lp-hero-visual">
+            <div class="lp-parking-card">
+                <div class="lp-parking-card-header">
                     <div>
-                        <span>مصف وسط المدينة</span>
-                        <small>توفر مباشر</small>
+                        <div class="lp-lot-name">مصف وسط المدينة</div>
+                        <div class="lp-lot-sub"><i class="bi bi-geo-alt me-1"></i>عمّان — شميساني</div>
                     </div>
-                    <strong>6 متاحة</strong>
+                    <span class="lp-avail-badge"><i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>6 متاح</span>
                 </div>
-                <div class="home-spot-grid">
-                    <span class="home-spot available">A1</span>
-                    <span class="home-spot reserved">A2</span>
-                    <span class="home-spot available">A3</span>
-                    <span class="home-spot occupied">A4</span>
-                    <span class="home-spot available">B1</span>
-                    <span class="home-spot available">B2</span>
-                    <span class="home-spot reserved">B3</span>
-                    <span class="home-spot available">B4</span>
+                <div class="lp-spot-grid">
+                    <div class="lp-spot free">A1</div>
+                    <div class="lp-spot taken">A2</div>
+                    <div class="lp-spot free">A3</div>
+                    <div class="lp-spot booked">A4</div>
+                    <div class="lp-spot free">B1</div>
+                    <div class="lp-spot free">B2</div>
+                    <div class="lp-spot booked">B3</div>
+                    <div class="lp-spot free">B4</div>
                 </div>
-                <div class="home-lot-footer">
-                    <span>12:00 ظهراً - 10:00 مساءً</span>
-                    <strong>2.50 / ساعة</strong>
+                <div class="lp-parking-card-footer">
+                    <span><i class="bi bi-clock me-1"></i>8:00 ص – 11:00 م</span>
+                    <strong>2.50 د.أ / ساعة</strong>
+                </div>
+            </div>
+
+            <!-- Floating notification badge -->
+            <div class="lp-float-badge lp-float-badge-1">
+                <i class="bi bi-check-circle-fill" style="color:#20c997"></i>
+                <div>
+                    <div class="lp-fb-title">تم تأكيد الحجز!</div>
+                    <div class="lp-fb-sub">موقف B2 — 10:30 ص</div>
+                </div>
+            </div>
+            <div class="lp-float-badge lp-float-badge-2">
+                <i class="bi bi-p-square-fill" style="color:#0d6efd"></i>
+                <div>
+                    <div class="lp-fb-title">5 مصفات قريبة</div>
+                    <div class="lp-fb-sub">في نطاق 2 كم</div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section class="home-stats" aria-label="Platform highlights">
-        <div>
-            <strong>مصفات معتمدة فقط</strong>
-            <span>الأدمن يراجع كل مصف قبل أن يظهر للمستخدمين.</span>
-        </div>
-        <div>
-            <strong>حالة المواقف مباشرة</strong>
-            <span>صاحب المصف يقدر يحدد إذا الموقف متاح أو محجوز أو مشغول أو تحت الصيانة.</span>
-        </div>
-        <div>
-            <strong>حجز موقف محدد</strong>
-            <span>المستخدم يختار الموقف نفسه بدل الحجز العشوائي.</span>
-        </div>
-    </section>
+    <!-- Scroll hint -->
+    <div class="lp-scroll-hint">
+        <i class="bi bi-chevron-down"></i>
+    </div>
+</section>
 
-    <section class="home-paths">
-        <div class="home-path-card">
-            <div class="home-path-label">للمستخدمين</div>
-            <h2>احجز موقفك</h2>
-            <p>تصفح المصفات المعتمدة، قارن التوفر، واختر الموقف المناسب لك.</p>
-            <a asp-controller="ParkingLots" asp-action="Index">عرض المصفات</a>
+<!-- ═══════════════════════════════════════════════ STATS ═══ -->
+<section class="lp-stats">
+    <div class="lp-stats-inner">
+        <div class="lp-stat-item">
+            <div class="lp-stat-number" data-target="500">0</div>
+            <div class="lp-stat-label">مستخدم مسجّل</div>
         </div>
-        <div class="home-path-card">
-            <div class="home-path-label">لأصحاب المصفات</div>
-            <h2>أدر مصفاتك</h2>
-            <p>أضف المصفات والمواقف، وحدّث حالة كل موقف حسب الواقع.</p>
-            <a asp-controller="Owner" asp-action="Dashboard">فتح لوحة المالك</a>
+        <div class="lp-stat-item">
+            <div class="lp-stat-number" data-target="50">0</div>
+            <div class="lp-stat-label">مصف معتمد</div>
         </div>
-        <div class="home-path-card">
-            <div class="home-path-label">للإدارة</div>
-            <h2>راجع الطلبات</h2>
-            <p>وافق على المصفات أو ارفضها أو علّقها قبل إتاحتها للحجز.</p>
-            <a asp-controller="Admin" asp-action="Dashboard">فتح لوحة الأدمن</a>
+        <div class="lp-stat-item">
+            <div class="lp-stat-number" data-target="1200">0</div>
+            <div class="lp-stat-label">حجز مكتمل</div>
         </div>
-    </section>
-</div>
+        <div class="lp-stat-item">
+            <div class="lp-stat-number" data-target="12">0</div>
+            <div class="lp-stat-label">مدينة مغطّاة</div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ FEATURES ═══ -->
+<section class="lp-features">
+    <div class="lp-section-inner">
+        <div class="text-center mb-4">
+            <span class="lp-section-tag">لماذا تختارنا؟</span>
+            <h2 class="lp-section-title">كل ما تحتاجه في منصة واحدة</h2>
+            <p class="lp-section-sub mx-auto">
+                منصتنا تجمع بين السهولة والموثوقية لتجربة حجز مواقف لا مثيل لها.
+            </p>
+        </div>
+        <div class="lp-features-grid">
+            <div class="lp-feature-card">
+                <div class="lp-feature-icon blue"><i class="bi bi-lightning-charge-fill"></i></div>
+                <h3>حجز فوري في ثوانٍ</h3>
+                <p>اختر المصف، حدّد الموقف، وأكّد الحجز في أقل من دقيقة بخطوات بسيطة جداً.</p>
+            </div>
+            <div class="lp-feature-card">
+                <div class="lp-feature-icon green"><i class="bi bi-patch-check-fill"></i></div>
+                <h3>مصفات معتمدة ومراجعة</h3>
+                <p>كل مصف يمر بمراجعة إدارية صارمة قبل ظهوره — لا مصفات وهمية أو مشبوهة.</p>
+            </div>
+            <div class="lp-feature-card">
+                <div class="lp-feature-icon purple"><i class="bi bi-shield-lock-fill"></i></div>
+                <h3>دفع آمن ومشفّر</h3>
+                <p>بطاقة ائتمان، PayPal، أو محفظة إلكترونية — كل معاملاتك محمية بتشفير كامل.</p>
+            </div>
+            <div class="lp-feature-card">
+                <div class="lp-feature-icon teal"><i class="bi bi-activity"></i></div>
+                <h3>حالة المواقف مباشرة</h3>
+                <p>الأسعار والتوفر يتحدثان لحظةً بلحظة — ما تراه هو ما تحجزه فعلاً.</p>
+            </div>
+            <div class="lp-feature-card">
+                <div class="lp-feature-icon orange"><i class="bi bi-cursor-fill"></i></div>
+                <h3>اختر موقفك بنفسك</h3>
+                <p>لا حجوزات عشوائية — خريطة تفاعلية تتيح لك اختيار الموقف الأنسب لك.</p>
+            </div>
+            <div class="lp-feature-card">
+                <div class="lp-feature-icon yellow"><i class="bi bi-x-circle-fill"></i></div>
+                <h3>إلغاء مرن بلا قيود</h3>
+                <p>غيّرت رأيك؟ ألغِ الحجز قبل موعده بنقرة واحدة واسترد مبلغك كاملاً.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ HOW IT WORKS ═══ -->
+<section class="lp-how">
+    <div class="lp-section-inner">
+        <div class="text-center mb-5">
+            <span class="lp-section-tag">كيف يعمل؟</span>
+            <h2 class="lp-section-title">أربع خطوات وموقفك محجوز</h2>
+        </div>
+        <div class="lp-steps-grid">
+            <div class="lp-step">
+                <div class="lp-step-num">١</div>
+                <div class="lp-step-icon-wrap"><i class="bi bi-person-plus-fill"></i></div>
+                <h3>سجّل حسابك</h3>
+                <p>أنشئ حسابك مجاناً في أقل من دقيقة وأضف مركبتك.</p>
+            </div>
+            <div class="lp-step">
+                <div class="lp-step-num">٢</div>
+                <div class="lp-step-icon-wrap"><i class="bi bi-search"></i></div>
+                <h3>ابحث عن مصف</h3>
+                <p>تصفح المصفات في مدينتك وقارن الأسعار والمواقف المتاحة.</p>
+            </div>
+            <div class="lp-step">
+                <div class="lp-step-num">٣</div>
+                <div class="lp-step-icon-wrap"><i class="bi bi-p-square-fill"></i></div>
+                <h3>اختر موقفك</h3>
+                <p>حدّد الموقف الذي تريده وأدخل وقت البداية والنهاية.</p>
+            </div>
+            <div class="lp-step">
+                <div class="lp-step-num">٤</div>
+                <div class="lp-step-icon-wrap"><i class="bi bi-credit-card-fill"></i></div>
+                <h3>ادفع وانطلق</h3>
+                <p>أتمّ الدفع الآمن وتوجّه إلى موقفك بكل ثقة.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ TESTIMONIALS ═══ -->
+<section class="lp-testimonials">
+    <div class="lp-section-inner">
+        <div class="text-center mb-5">
+            <span class="lp-section-tag">آراء المستخدمين</span>
+            <h2 class="lp-section-title">ماذا يقول عملاؤنا؟</h2>
+        </div>
+        <div class="lp-testimonials-grid">
+            <div class="lp-testimonial-card">
+                <div class="lp-testimonial-stars">★★★★★</div>
+                <blockquote>"أخيراً تطبيق يحل مشكلة إيجاد موقف في وسط عمّان! الحجز سريع جداً والمصفات واضحة ومعتمدة. وفّرت وقتاً كثيراً."</blockquote>
+                <div class="lp-testimonial-author">
+                    <div class="lp-testimonial-avatar">ع</div>
+                    <div>
+                        <div class="lp-testimonial-name">عمر أبو حمدان</div>
+                        <div class="lp-testimonial-role">مستخدم — شميساني، عمّان</div>
+                    </div>
+                </div>
+            </div>
+            <div class="lp-testimonial-card">
+                <div class="lp-testimonial-stars">★★★★★</div>
+                <blockquote>"كصاحب مصف، المنصة ساعدتني أضاعف حجوزاتي. لوحة التحكم واضحة وسهلة، والإيرادات أصبحت أعلى بكثير."</blockquote>
+                <div class="lp-testimonial-author">
+                    <div class="lp-testimonial-avatar">خ</div>
+                    <div>
+                        <div class="lp-testimonial-name">خالد النابلسي</div>
+                        <div class="lp-testimonial-role">صاحب مصف — الصويفية، عمّان</div>
+                    </div>
+                </div>
+            </div>
+            <div class="lp-testimonial-card">
+                <div class="lp-testimonial-stars">★★★★☆</div>
+                <blockquote>"تجربة رائعة من البداية للنهاية. الدفع سهل والتطبيق سريع. أنصح الجميع بالتسجيل والتجربة فوراً."</blockquote>
+                <div class="lp-testimonial-author">
+                    <div class="lp-testimonial-avatar">ر</div>
+                    <div>
+                        <div class="lp-testimonial-name">رنا الخطيب</div>
+                        <div class="lp-testimonial-role">مستخدمة — الجاردنز، عمّان</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ CTA ═══ -->
+<section class="lp-cta">
+    <div class="lp-cta-inner">
+        <h2>جاهز تحجز موقفك الأول؟</h2>
+        <p>انضم لآلاف المستخدمين الذين يوفّرون وقتهم كل يوم مع منصة حجز المواقف.</p>
+        <div class="lp-cta-actions">
+            @if (!(User.Identity?.IsAuthenticated ?? false))
+            {
+                <a class="lp-btn-primary" asp-area="Identity" asp-page="/Account/Register">
+                    <i class="bi bi-person-plus-fill"></i> سجّل مجاناً الآن
+                </a>
+                <a class="lp-btn-ghost" asp-area="Identity" asp-page="/Account/Login">
+                    <i class="bi bi-box-arrow-in-right"></i> تسجيل الدخول
+                </a>
+            }
+            else
+            {
+                <a class="lp-btn-primary" asp-controller="ParkingLots" asp-action="Index">
+                    <i class="bi bi-search"></i> ابحث عن موقف
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+// Animated counter on scroll
+const counters = document.querySelectorAll('.lp-stat-number[data-target]');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = +el.dataset.target;
+        const duration = 1600;
+        const step = target / (duration / 16);
+        let current = 0;
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) { current = target; clearInterval(timer); }
+            el.textContent = Math.floor(current).toLocaleString('ar-SA') + '+';
+        }, 16);
+        observer.unobserve(el);
+    });
+}, { threshold: 0.4 });
+counters.forEach(c => observer.observe(c));
+</script>
+}

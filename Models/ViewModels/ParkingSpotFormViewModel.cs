@@ -10,10 +10,10 @@ namespace ParkingReservation.Models.ViewModels
 
         [Required]
         [StringLength(50)]
-        [Display(Name = "Spot number")]
+        [Display(Name = "رقم الموقف")]
         public string SpotNumber { get; set; } = string.Empty;
 
-        [Display(Name = "Spot type")]
+        [Display(Name = "نوع الموقف")]
         public ParkingSpotType SpotType { get; set; } = ParkingSpotType.Standard;
     }
 }

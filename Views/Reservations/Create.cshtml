@@ -1,0 +1,107 @@
+@model ParkingSpot
+@using ParkingReservation.Models
+@{
+    ViewData["Title"] = "إنشاء حجز";
+    var vehicles = ViewBag.Vehicles as List<Vehicle> ?? new();
+}
+
+<div class="customer-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">حجز موقف</div>
+            <h1 class="customer-title">@Model.ParkingLot?.Name - موقف @Model.SpotNumber</h1>
+            <p class="customer-subtitle">@Model.ParkingLot?.Address، @Model.ParkingLot?.City</p>
+        </div>
+        <a class="btn btn-outline-secondary" asp-controller="ParkingLots" asp-action="Details" asp-route-id="@Model.ParkingLotId">رجوع</a>
+    </div>
+
+    <section class="customer-panel">
+        <div class="customer-panel-header">
+            <h2>تفاصيل الحجز</h2>
+        </div>
+
+        <form method="post" class="p-3 row g-3" id="reservationForm">
+            <input type="hidden" name="parkingSpotId" value="@Model.Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+
+            <div class="col-md-6">
+                <label class="form-label">وقت البداية</label>
+                <input type="datetime-local" name="startTime" id="startTime" value="@ViewBag.DefaultStartTime" class="form-control auth-input" required />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">وقت الانتهاء</label>
+                <input type="datetime-local" name="endTime" id="endTime" value="@ViewBag.DefaultEndTime" class="form-control auth-input" required />
+            </div>
+
+            <div class="col-12">
+                <div class="customer-summary-grid">
+                    <div class="customer-summary-card">
+                        <span>سعر الساعة</span>
+                        <strong>@Model.ParkingLot?.HourlyRate.ToString("0.00")</strong>
+                    </div>
+                    <div class="customer-summary-card">
+                        <span>المدة المقدّرة</span>
+                        <strong id="duration">-</strong>
+                    </div>
+                    <div class="customer-summary-card">
+                        <span>السعر الإجمالي المقدّر</span>
+                        <strong id="totalPrice">-</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-car-front me-1 text-muted"></i> المركبة *
+                </label>
+                <select name="vehicleId" class="form-select auth-input" required>
+                    <option value="">-- اختر مركبة --</option>
+                    @foreach (var v in vehicles)
+                    {
+                        <option value="@v.Id">
+                            @v.PlateNumber@(v.Make != null ? $" - {v.Make} {v.Model}" : "")@(v.Color != null ? $" ({v.Color})" : "")
+                        </option>
+                    }
+                </select>
+                <div class="d-flex justify-content-end mt-1">
+                    <a asp-controller="Vehicles" asp-action="Create"
+                       asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                       class="small text-decoration-none" style="color:#0f766e">
+                        <i class="bi bi-plus-circle me-1"></i> إضافة مركبة جديدة
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn customer-card-btn">تأكيد الحجز</button>
+                <a class="btn btn-outline-secondary" asp-controller="ParkingLots" asp-action="Details" asp-route-id="@Model.ParkingLotId">إلغاء</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        const hourlyRate = @Model.ParkingLot?.HourlyRate.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        function updatePrice() {
+            const start = new Date(document.getElementById('startTime').value);
+            const end = new Date(document.getElementById('endTime').value);
+            if (isNaN(start) || isNaN(end) || end <= start) {
+                document.getElementById('duration').textContent = '-';
+                document.getElementById('totalPrice').textContent = '-';
+                return;
+            }
+            const diffMs = end - start;
+            const hours = Math.ceil(diffMs / 3600000);
+            const total = (hours * hourlyRate).toFixed(2);
+            document.getElementById('duration').textContent = hours + ' ساعة';
+            document.getElementById('totalPrice').textContent = total;
+        }
+
+        document.getElementById('startTime').addEventListener('change', updatePrice);
+        document.getElementById('endTime').addEventListener('change', updatePrice);
+        updatePrice();
+    </script>
+}

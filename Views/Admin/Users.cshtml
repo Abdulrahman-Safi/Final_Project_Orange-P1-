@@ -1,0 +1,118 @@
+@model List<(ParkingReservation.Models.ApplicationUser User, IList<string> Roles)>
+@{
+    ViewData["Title"] = "إدارة المستخدمين";
+    var selectedRole = ViewBag.SelectedRole as string;
+    int totalCount = ViewBag.TotalCount;
+    int userCount  = ViewBag.UserCount;
+    int ownerCount = ViewBag.OwnerCount;
+}
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-title">لوحة الإدارة</div>
+        <a asp-action="Dashboard"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+        <a class="active" asp-action="Users"><i class="bi bi-people"></i> إدارة المستخدمين</a>
+        <a asp-action="ApproveParkingLots"><i class="bi bi-p-square"></i> اعتماد المصفات</a>
+        <a asp-action="Reservations"><i class="bi bi-calendar2-check"></i> متابعة الحجوزات</a>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-header">
+            <div>
+                <span>إدارة الحسابات</span>
+                <h1>إدارة المستخدمين</h1>
+                <p>عرض الحسابات المسجلة، فلترة حسب الدور، وتفعيل/تعطيل الحسابات.</p>
+            </div>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        <div class="admin-kpi-grid" style="margin-bottom:1.5rem">
+            <a class="admin-kpi @(selectedRole == null ? "active" : "")"
+               asp-action="Users" style="text-decoration:none;cursor:pointer">
+                <span>الكل</span><strong>@totalCount</strong>
+            </a>
+            <a class="admin-kpi @(selectedRole == "User" ? "active" : "")"
+               asp-action="Users" asp-route-role="User" style="text-decoration:none;cursor:pointer">
+                <span>مستخدمون</span><strong>@userCount</strong>
+            </a>
+            <a class="admin-kpi @(selectedRole == "Owner" ? "active warning" : "warning")"
+               asp-action="Users" asp-route-role="Owner" style="text-decoration:none;cursor:pointer">
+                <span>أصحاب مصفات</span><strong>@ownerCount</strong>
+            </a>
+        </div>
+
+        <section class="admin-card admin-wide">
+            <div class="table-responsive">
+                <table class="table table-dashboard">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>الهاتف</th>
+                            <th>الدور</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>الحالة</th>
+                            <th class="text-end">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (user, roles) in Model)
+                        {
+                            var isAdmin = roles.Contains("Admin");
+                            var isOwner = roles.Contains("Owner");
+                            <tr>
+                                <td class="fw-semibold">@user.FullName</td>
+                                <td>@user.Email</td>
+                                <td>@(user.PhoneNumber ?? "-")</td>
+                                <td>
+                                    @if (isAdmin)
+                                    {
+                                        <span class="status-pill status-approved">مدير</span>
+                                    }
+                                    else if (isOwner)
+                                    {
+                                        <span class="status-pill status-pending">صاحب مصف</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-pill" style="background:var(--bs-secondary-bg);color:var(--bs-secondary)">مستخدم</span>
+                                    }
+                                </td>
+                                <td>@user.CreatedAt.ToString("yyyy/MM/dd")</td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="status-pill status-approved">نشط</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-pill status-rejected">معطّل</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (!isAdmin)
+                                    {
+                                        <form asp-action="ToggleUserActive" method="post" style="display:inline">
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-danger" : "btn-outline-success")">
+                                                @(user.IsActive ? "تعطيل" : "تفعيل")
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>

@@ -1,15 +1,15 @@
 @model ParkingLot
 @{
-    ViewData["Title"] = "Parking Lot Details";
+    ViewData["Title"] = "تفاصيل المصف";
 }
 
 <div class="page-shell">
     <div class="dashboard-header">
         <div>
             <h1 class="dashboard-title">@Model.Name</h1>
-            <p class="dashboard-subtitle">@Model.Address, @Model.City</p>
+            <p class="dashboard-subtitle">@Model.Address، @Model.City</p>
         </div>
-        <a class="btn btn-outline-secondary" asp-action="Dashboard">Back</a>
+        <a class="btn btn-outline-secondary" asp-action="Dashboard">رجوع</a>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -20,29 +20,29 @@
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="detail-card">
-                <h2>Parking lot</h2>
+                <h2>بيانات المصف</h2>
                 <dl class="row mb-0">
-                    <dt class="col-sm-4">Status</dt>
-                    <dd class="col-sm-8"><span class="status-pill @GetStatusClass(Model.Status)">@Model.Status</span></dd>
-                    <dt class="col-sm-4">Hourly rate</dt>
+                    <dt class="col-sm-4">الحالة</dt>
+                    <dd class="col-sm-8"><span class="status-pill @GetStatusClass(Model.Status)">@GetStatusName(Model.Status)</span></dd>
+                    <dt class="col-sm-4">سعر الساعة</dt>
                     <dd class="col-sm-8">@Model.HourlyRate.ToString("0.00")</dd>
-                    <dt class="col-sm-4">Opening</dt>
+                    <dt class="col-sm-4">ساعات العمل</dt>
                     <dd class="col-sm-8">@Model.OpeningTime - @Model.ClosingTime</dd>
-                    <dt class="col-sm-4">Description</dt>
-                    <dd class="col-sm-8">@(Model.Description ?? "No description")</dd>
+                    <dt class="col-sm-4">الوصف</dt>
+                    <dd class="col-sm-8">@(Model.Description ?? "لا يوجد وصف")</dd>
                 </dl>
             </div>
         </div>
         <div class="col-md-6">
             <div class="detail-card">
-                <h2>Owner</h2>
+                <h2>صاحب المصف</h2>
                 <dl class="row mb-0">
-                    <dt class="col-sm-4">Name</dt>
+                    <dt class="col-sm-4">الاسم</dt>
                     <dd class="col-sm-8">@Model.Owner?.FullName</dd>
-                    <dt class="col-sm-4">Email</dt>
+                    <dt class="col-sm-4">البريد</dt>
                     <dd class="col-sm-8">@Model.Owner?.Email</dd>
-                    <dt class="col-sm-4">Phone</dt>
-                    <dd class="col-sm-8">@(Model.Owner?.PhoneNumber ?? "Not provided")</dd>
+                    <dt class="col-sm-4">الهاتف</dt>
+                    <dd class="col-sm-8">@(Model.Owner?.PhoneNumber ?? "غير متوفر")</dd>
                 </dl>
             </div>
         </div>
@@ -50,37 +50,37 @@
 
     <div class="content-panel mb-4">
         <div class="panel-header">
-            <h2 class="panel-title">Status actions</h2>
+            <h2 class="panel-title">إجراءات الحالة</h2>
         </div>
         <div class="p-3 d-flex flex-wrap gap-2">
             <form asp-action="ChangeParkingLotStatus" method="post">
                 <input type="hidden" name="id" value="@Model.Id" />
                 <input type="hidden" name="status" value="@ParkingLotStatus.Approved" />
-                <button type="submit" class="btn btn-success">Approve</button>
+                <button type="submit" class="btn btn-success">موافقة</button>
             </form>
             <form asp-action="ChangeParkingLotStatus" method="post">
                 <input type="hidden" name="id" value="@Model.Id" />
                 <input type="hidden" name="status" value="@ParkingLotStatus.Rejected" />
-                <button type="submit" class="btn btn-danger">Reject</button>
+                <button type="submit" class="btn btn-danger">رفض</button>
             </form>
             <form asp-action="ChangeParkingLotStatus" method="post">
                 <input type="hidden" name="id" value="@Model.Id" />
                 <input type="hidden" name="status" value="@ParkingLotStatus.Suspended" />
-                <button type="submit" class="btn btn-warning">Suspend</button>
+                <button type="submit" class="btn btn-warning">تعليق</button>
             </form>
         </div>
     </div>
 
     <div class="content-panel">
         <div class="panel-header">
-            <h2 class="panel-title">Parking spots</h2>
+            <h2 class="panel-title">المواقف</h2>
         </div>
 
         @if (!Model.ParkingSpots.Any())
         {
             <div class="empty-state">
-                <div class="empty-state-title">No spots have been added yet</div>
-                <p class="empty-state-text">The owner can add spots from the owner dashboard.</p>
+                <div class="empty-state-title">لم تتم إضافة مواقف بعد</div>
+                <p class="empty-state-text">يمكن لصاحب المصف إضافة المواقف من لوحة المالك.</p>
             </div>
         }
         else
@@ -89,9 +89,9 @@
                 <table class="table table-hover table-dashboard">
                     <thead>
                         <tr>
-                            <th>Spot number</th>
-                            <th>Type</th>
-                            <th>Status</th>
+                            <th>رقم الموقف</th>
+                            <th>النوع</th>
+                            <th>الحالة</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,8 +99,8 @@
                     {
                         <tr>
                             <td class="fw-semibold">@spot.SpotNumber</td>
-                            <td>@spot.SpotType</td>
-                            <td><span class="status-pill status-suspended">@spot.Status</span></td>
+                            <td>@GetSpotTypeName(spot.SpotType)</td>
+                            <td><span class="status-pill @GetSpotStatusClass(spot.Status)">@GetSpotStatusName(spot.Status)</span></td>
                         </tr>
                     }
                     </tbody>
@@ -120,6 +120,54 @@
             ParkingLotStatus.Rejected => "status-rejected",
             ParkingLotStatus.Suspended => "status-suspended",
             _ => "status-suspended"
+        };
+    }
+
+    private static string GetStatusName(ParkingLotStatus status)
+    {
+        return status switch
+        {
+            ParkingLotStatus.Pending => "قيد المراجعة",
+            ParkingLotStatus.Approved => "معتمد",
+            ParkingLotStatus.Rejected => "مرفوض",
+            ParkingLotStatus.Suspended => "معلق",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetSpotStatusClass(ParkingSpotStatus status)
+    {
+        return status switch
+        {
+            ParkingSpotStatus.Available => "status-approved",
+            ParkingSpotStatus.Reserved => "status-pending",
+            ParkingSpotStatus.Occupied => "status-rejected",
+            ParkingSpotStatus.Maintenance => "status-suspended",
+            _ => "status-suspended"
+        };
+    }
+
+    private static string GetSpotStatusName(ParkingSpotStatus status)
+    {
+        return status switch
+        {
+            ParkingSpotStatus.Available => "متاح",
+            ParkingSpotStatus.Reserved => "محجوز",
+            ParkingSpotStatus.Occupied => "مشغول",
+            ParkingSpotStatus.Maintenance => "صيانة",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetSpotTypeName(ParkingSpotType type)
+    {
+        return type switch
+        {
+            ParkingSpotType.Standard => "عادي",
+            ParkingSpotType.Disabled => "ذوي الإعاقة",
+            ParkingSpotType.Electric => "كهربائي",
+            ParkingSpotType.VIP => "VIP",
+            _ => type.ToString()
         };
     }
 }

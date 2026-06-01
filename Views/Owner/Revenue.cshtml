@@ -1,0 +1,116 @@
+@model IEnumerable<ParkingReservation.Models.Reservation>
+@using ParkingReservation.Models.ViewModels
+@{
+    ViewData["Title"] = "الإيرادات";
+    var totalRevenue = (decimal)ViewBag.TotalRevenue;
+    var thisMonthRevenue = (decimal)ViewBag.ThisMonthRevenue;
+    var totalPaid = (int)ViewBag.TotalPaid;
+    var revenuePerMonth = ViewBag.RevenuePerMonth as List<DashboardChartItem> ?? new();
+    var maxRevenue = Math.Max(1, revenuePerMonth.Any() ? revenuePerMonth.Max(x => x.Value) : 1);
+}
+
+<div class="owner-shell owner-business">
+    <div class="owner-header owner-business-header">
+        <div>
+            <div class="owner-kicker">الإيرادات والمدفوعات</div>
+            <h1 class="owner-title">تقرير الإيرادات</h1>
+            <p class="owner-subtitle">تتبع إيراداتك الشهرية وتوزيع الأرباح حسب المصف.</p>
+        </div>
+        <div class="owner-action-row">
+            <a class="btn btn-outline-secondary" asp-action="Dashboard"><i class="bi bi-arrow-right"></i> لوحة التحكم</a>
+        </div>
+    </div>
+
+    <div class="owner-kpi-grid">
+        <div class="owner-kpi-card">
+            <div class="owner-kpi-icon" style="background:#fef9c3;color:#ca8a04"><i class="bi bi-cash-stack"></i></div>
+            <div class="owner-kpi-body">
+                <span>إجمالي الإيرادات</span>
+                <strong>@totalRevenue.ToString("0.00") <small style="font-size:.9rem;font-weight:600;color:#667085">د.أ</small></strong>
+            </div>
+        </div>
+        <div class="owner-kpi-card">
+            <div class="owner-kpi-icon" style="background:#d1fae5;color:#059669"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="owner-kpi-body">
+                <span>إيرادات هذا الشهر</span>
+                <strong>@thisMonthRevenue.ToString("0.00") <small style="font-size:.9rem;font-weight:600;color:#667085">د.أ</small></strong>
+            </div>
+        </div>
+        <div class="owner-kpi-card">
+            <div class="owner-kpi-icon" style="background:#e7f1ff;color:#0d6efd"><i class="bi bi-calendar-check-fill"></i></div>
+            <div class="owner-kpi-body">
+                <span>الحجوزات المؤكدة / المكتملة</span>
+                <strong>@totalPaid</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="owner-dashboard-grid">
+        <section class="owner-widget owner-widget-wide">
+            <div class="owner-widget-header"><h2>الإيرادات الشهرية (آخر 12 شهراً)</h2></div>
+            <div class="admin-chart green">
+                @foreach (var item in revenuePerMonth)
+                {
+                    var height = Math.Max(8, (int)(item.Value / maxRevenue * 100));
+                    <div><span style="height:@height%"></span><small>@item.Label</small></div>
+                }
+            </div>
+        </section>
+
+        <section class="owner-widget owner-widget-wide">
+            <div class="owner-widget-header"><h2>الإيرادات حسب المصف</h2></div>
+            <div class="table-responsive">
+                <table class="table table-dashboard">
+                    <thead>
+                        <tr><th>المصف</th><th>عدد الحجوزات</th><th>الإيرادات (د.أ)</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lot in (IEnumerable<dynamic>)ViewBag.RevenuePerLot)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@lot.Name</td>
+                                <td>@lot.Count</td>
+                                <td class="fw-semibold">@((decimal)lot.Revenue).ToString("0.00")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="owner-widget owner-widget-wide">
+            <div class="owner-widget-header"><h2>آخر الحجوزات المدفوعة</h2></div>
+            @if (!Model.Any())
+            {
+                <div class="customer-empty customer-empty-panel">
+                    <div class="customer-empty-title">لا توجد إيرادات بعد</div>
+                    <p class="customer-empty-text">ستظهر هنا الحجوزات المؤكدة والمكتملة.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-dashboard">
+                        <thead>
+                            <tr><th>المستخدم</th><th>المصف</th><th>الموقف</th><th>البداية</th><th>النهاية</th><th>المبلغ (د.أ)</th><th>الحالة</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.Take(20))
+                            {
+                                <tr>
+                                    <td>@r.User?.FullName</td>
+                                    <td>@r.ParkingSpot?.ParkingLot?.Name</td>
+                                    <td>@r.ParkingSpot?.SpotNumber</td>
+                                    <td>@r.StartTime.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@r.EndTime.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td class="fw-semibold">@r.TotalPrice.ToString("0.00")</td>
+                                    <td><span class="status-pill status-approved">@(r.Status == ReservationStatus.Confirmed ? "مؤكد" : "مكتمل")</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>

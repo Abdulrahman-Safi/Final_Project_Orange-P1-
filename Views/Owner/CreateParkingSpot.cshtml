@@ -1,13 +1,13 @@
 @model ParkingReservation.Models.ViewModels.ParkingSpotFormViewModel
 @{
-    ViewData["Title"] = "Add Parking Spot";
+    ViewData["Title"] = "إضافة موقف";
 }
 
 <div class="owner-shell">
     <div class="owner-header">
         <div>
-            <div class="owner-kicker">New spot</div>
-            <h1 class="owner-title">Add parking spot</h1>
+            <div class="owner-kicker">موقف جديد</div>
+            <h1 class="owner-title">إضافة موقف</h1>
             <p class="owner-subtitle">@Model.ParkingLotName</p>
         </div>
     </div>
@@ -19,20 +19,25 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="col-md-6">
-                <label asp-for="SpotNumber" class="form-label"></label>
+                <label asp-for="SpotNumber" class="form-label">رقم الموقف</label>
                 <input asp-for="SpotNumber" class="form-control" />
                 <span asp-validation-for="SpotNumber" class="text-danger"></span>
             </div>
 
             <div class="col-md-6">
-                <label asp-for="SpotType" class="form-label"></label>
-                <select asp-for="SpotType" class="form-select" asp-items="Html.GetEnumSelectList<ParkingSpotType>()"></select>
+                <label asp-for="SpotType" class="form-label">نوع الموقف</label>
+                <select asp-for="SpotType" class="form-select">
+                    <option value="@ParkingSpotType.Standard">عادي</option>
+                    <option value="@ParkingSpotType.Disabled">ذوي الإعاقة</option>
+                    <option value="@ParkingSpotType.Electric">كهربائي</option>
+                    <option value="@ParkingSpotType.VIP">مميز</option>
+                </select>
                 <span asp-validation-for="SpotType" class="text-danger"></span>
             </div>
 
             <div class="col-12 d-flex gap-2">
-                <button type="submit" class="btn owner-primary-btn">Save</button>
-                <a class="btn btn-outline-secondary" asp-action="ParkingSpots" asp-route-parkingLotId="@Model.ParkingLotId">Cancel</a>
+                <button type="submit" class="btn owner-primary-btn">حفظ</button>
+                <a class="btn btn-outline-secondary" asp-action="ParkingSpots" asp-route-parkingLotId="@Model.ParkingLotId">إلغاء</a>
             </div>
         </form>
     </div>

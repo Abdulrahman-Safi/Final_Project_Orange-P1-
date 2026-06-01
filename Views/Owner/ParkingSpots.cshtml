@@ -1,37 +1,50 @@
 @model ParkingLot
 @{
-    ViewData["Title"] = "Parking Spots";
+    ViewData["Title"] = "مواقف المصف";
 }
 
 <div class="owner-shell">
     <div class="owner-header">
         <div>
-            <div class="owner-kicker">Spot management</div>
-            <h1 class="owner-title">@Model.Name spots</h1>
-            <p class="owner-subtitle">@Model.Address</p>
+            <div class="owner-kicker">إدارة المواقف</div>
+            <h1 class="owner-title">مواقف: @Model.Name</h1>
+            <p class="owner-subtitle"><i class="bi bi-geo-alt me-1"></i>@Model.Address، @Model.City</p>
         </div>
         <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary" asp-action="Dashboard">Back</a>
-            <a class="btn owner-primary-btn" asp-action="CreateParkingSpot" asp-route-parkingLotId="@Model.Id">Add spot</a>
+            <a class="btn btn-outline-secondary" asp-action="ManageParkingLots">
+                <i class="bi bi-arrow-right me-1"></i> رجوع للمصفات
+            </a>
+            <a class="btn primary-btn" asp-action="CreateParkingSpot" asp-route-parkingLotId="@Model.Id">
+                <i class="bi bi-plus-circle me-1"></i> إضافة موقف
+            </a>
         </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        </div>
     }
 
     <div class="owner-panel">
         <div class="owner-panel-header">
-            <h2 class="owner-panel-title">Parking spots</h2>
+            <h2 class="owner-panel-title">المواقف (@Model.ParkingSpots.Count())</h2>
+            <div class="d-flex gap-3 small">
+                <span class="text-success fw-semibold">@Model.ParkingSpots.Count(s => s.Status == ParkingSpotStatus.Available && s.IsActive) متاح</span>
+                <span class="text-danger fw-semibold">@Model.ParkingSpots.Count(s => s.Status == ParkingSpotStatus.Occupied) مشغول</span>
+                <span class="text-warning fw-semibold">@Model.ParkingSpots.Count(s => s.Status == ParkingSpotStatus.Maintenance) صيانة</span>
+            </div>
         </div>
 
         @if (!Model.ParkingSpots.Any())
         {
             <div class="owner-empty">
-                <div class="owner-empty-title">No spots have been added</div>
-                <p class="owner-empty-text">Add numbered spots so customers can reserve a specific place.</p>
-                <a class="btn owner-primary-btn" asp-action="CreateParkingSpot" asp-route-parkingLotId="@Model.Id">Add spot</a>
+                <div class="owner-empty-title">لم تتم إضافة مواقف بعد</div>
+                <p class="owner-empty-text">أضف مواقف مرقمة حتى يستطيع المستخدمون حجز موقف محدد.</p>
+                <a class="btn primary-btn mt-2" asp-action="CreateParkingSpot" asp-route-parkingLotId="@Model.Id">
+                    <i class="bi bi-plus-circle me-1"></i> إضافة موقف
+                </a>
             </div>
         }
         else
@@ -40,30 +53,51 @@
                 <table class="table table-hover owner-table">
                     <thead>
                         <tr>
-                            <th>Spot number</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th class="text-end">Change status</th>
+                            <th>رقم الموقف</th>
+                            <th>النوع</th>
+                            <th>الحالة</th>
+                            <th>يظهر للمستخدمين؟</th>
+                            <th class="text-end">تعديل</th>
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach (var spot in Model.ParkingSpots)
+                    @foreach (var spot in Model.ParkingSpots.OrderBy(s => s.SpotNumber))
                     {
+                        var visibleToUsers = spot.IsActive && spot.Status == ParkingSpotStatus.Available;
                         <tr>
                             <td class="fw-semibold">@spot.SpotNumber</td>
-                            <td>@spot.SpotType</td>
-                            <td><span class="owner-status @GetSpotStatusClass(spot.Status)">@spot.Status</span></td>
+                            <td>@GetSpotTypeName(spot.SpotType)</td>
+                            <td>
+                                <span class="owner-status @GetSpotStatusClass(spot.Status)">
+                                    @GetSpotStatusName(spot.Status)
+                                </span>
+                            </td>
+                            <td>
+                                @if (visibleToUsers)
+                                {
+                                    <span class="text-success fw-semibold small">
+                                        <i class="bi bi-eye-fill me-1"></i> نعم
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-semibold small">
+                                        <i class="bi bi-eye-slash-fill me-1"></i> مخفي
+                                    </span>
+                                }
+                            </td>
                             <td class="text-end">
-                                <form asp-action="ChangeSpotStatus" method="post" class="d-inline-flex gap-2">
-                                    <input type="hidden" name="id" value="@spot.Id" />
-                                    <select name="status" class="form-select form-select-sm">
-                                        @foreach (var status in Enum.GetValues<ParkingSpotStatus>())
-                                        {
-                                            <option value="@status" selected="@(status == spot.Status)">@status</option>
-                                        }
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
-                                </form>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary edit-spot-btn"
+                                        data-id="@spot.Id"
+                                        data-number="@spot.SpotNumber"
+                                        data-status="@((int)spot.Status)"
+                                        data-type="@((int)spot.SpotType)"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editSpotModal"
+                                        title="تعديل الموقف">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
                             </td>
                         </tr>
                     }
@@ -74,16 +108,91 @@
     </div>
 </div>
 
+<!-- Edit Spot Modal -->
+<div class="modal fade" id="editSpotModal" tabindex="-1" aria-labelledby="editSpotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSpotModalLabel">
+                    <i class="bi bi-pencil-fill me-2 text-muted"></i>
+                    تعديل الموقف — <span id="modalSpotNumber"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <form asp-action="EditSpot" method="post">
+                <div class="modal-body row g-3">
+                    <input type="hidden" name="id" id="modalSpotId" />
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">نوع الموقف</label>
+                        <select name="spotType" id="modalSpotType" class="form-select auth-input">
+                            <option value="@((int)ParkingSpotType.Standard)">عادي</option>
+                            <option value="@((int)ParkingSpotType.Disabled)">ذوي الإعاقة</option>
+                            <option value="@((int)ParkingSpotType.Electric)">كهربائي</option>
+                            <option value="@((int)ParkingSpotType.VIP)">VIP</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">حالة الموقف</label>
+                        <select name="status" id="modalSpotStatus" class="form-select auth-input">
+                            <option value="@((int)ParkingSpotStatus.Available)">متاح — يظهر للمستخدمين</option>
+                            <option value="@((int)ParkingSpotStatus.Occupied)">مشغول — مخفي عن المستخدمين</option>
+                            <option value="@((int)ParkingSpotStatus.Maintenance)">صيانة — مخفي عن المستخدمين</option>
+                        </select>
+                        <div class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            الحالة «محجوز» تُضبط تلقائياً عند وجود حجز نشط.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn primary-btn">
+                        <i class="bi bi-check-lg me-1"></i> حفظ التعديلات
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.edit-spot-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.getElementById('modalSpotId').value     = this.dataset.id;
+            document.getElementById('modalSpotNumber').textContent = this.dataset.number;
+            document.getElementById('modalSpotType').value   = this.dataset.type;
+            document.getElementById('modalSpotStatus').value = this.dataset.status;
+        });
+    });
+</script>
+}
+
 @functions {
-    private static string GetSpotStatusClass(ParkingSpotStatus status)
+    private static string GetSpotStatusClass(ParkingSpotStatus s) => s switch
     {
-        return status switch
-        {
-            ParkingSpotStatus.Available => "owner-status-available",
-            ParkingSpotStatus.Reserved => "owner-status-reserved",
-            ParkingSpotStatus.Occupied => "owner-status-occupied",
-            ParkingSpotStatus.Maintenance => "owner-status-maintenance",
-            _ => "owner-status-maintenance"
-        };
-    }
+        ParkingSpotStatus.Available   => "owner-status-available",
+        ParkingSpotStatus.Reserved    => "owner-status-reserved",
+        ParkingSpotStatus.Occupied    => "owner-status-occupied",
+        ParkingSpotStatus.Maintenance => "owner-status-maintenance",
+        _ => ""
+    };
+    private static string GetSpotStatusName(ParkingSpotStatus s) => s switch
+    {
+        ParkingSpotStatus.Available   => "متاح",
+        ParkingSpotStatus.Reserved    => "محجوز",
+        ParkingSpotStatus.Occupied    => "مشغول",
+        ParkingSpotStatus.Maintenance => "صيانة",
+        _ => s.ToString()
+    };
+    private static string GetSpotTypeName(ParkingSpotType t) => t switch
+    {
+        ParkingSpotType.Standard  => "عادي",
+        ParkingSpotType.Disabled  => "ذوي الإعاقة",
+        ParkingSpotType.Electric  => "كهربائي",
+        ParkingSpotType.VIP       => "VIP",
+        _ => t.ToString()
+    };
 }

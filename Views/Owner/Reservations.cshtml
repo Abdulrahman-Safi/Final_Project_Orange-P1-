@@ -1,0 +1,116 @@
+@model IEnumerable<Reservation>
+@{
+    ViewData["Title"] = "طلبات الحجز";
+}
+
+<div class="owner-shell">
+    <div class="owner-header">
+        <div>
+            <div class="owner-kicker">طلبات الحجز</div>
+            <h1 class="owner-title">حجوزات المصفات</h1>
+            <p class="owner-subtitle">راجع طلبات المستخدمين ووافق عليها أو ارفضها.</p>
+        </div>
+        <a class="btn btn-outline-secondary" asp-action="Dashboard">رجوع</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="owner-panel">
+        <div class="owner-panel-header">
+            <h2 class="owner-panel-title">قائمة الطلبات</h2>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="owner-empty">
+                <div class="owner-empty-title">لا توجد طلبات حجز</div>
+                <p class="owner-empty-text">ستظهر طلبات المستخدمين هنا بعد إنشاء الحجز.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover owner-table">
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>المصف</th>
+                            <th>الموقف</th>
+                            <th>المركبة</th>
+                            <th>الفترة</th>
+                            <th>السعر</th>
+                            <th>الحالة</th>
+                            <th>الدفع</th>
+                            <th class="text-end">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var reservation in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div>@reservation.User?.FullName</div>
+                                <div class="small text-muted">@reservation.User?.Email</div>
+                            </td>
+                            <td>@reservation.ParkingSpot?.ParkingLot?.Name</td>
+                            <td>@reservation.ParkingSpot?.SpotNumber</td>
+                            <td>@(reservation.Vehicle?.PlateNumber ?? "-")</td>
+                            <td>
+                                <div>@reservation.StartTime.ToString("yyyy/MM/dd HH:mm")</div>
+                                <div class="small text-muted">@reservation.EndTime.ToString("yyyy/MM/dd HH:mm")</div>
+                            </td>
+                            <td>@reservation.TotalPrice.ToString("0.00")</td>
+                            <td>@GetReservationStatusName(reservation.Status)</td>
+                            <td>
+                                @if (reservation.Payment != null)
+                                {
+                                    <span class="status-pill status-approved">مدفوع</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (reservation.Status == ReservationStatus.Pending)
+                                {
+                                    <form asp-action="ApproveReservation" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@reservation.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success">موافقة</button>
+                                    </form>
+                                    <form asp-action="RejectReservation" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@reservation.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">رفض</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    private static string GetReservationStatusName(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Pending => "بانتظار الموافقة",
+            ReservationStatus.Confirmed => "موافق عليه",
+            ReservationStatus.Cancelled => "مرفوض",
+            ReservationStatus.Completed => "مكتمل",
+            _ => status.ToString()
+        };
+    }
+}

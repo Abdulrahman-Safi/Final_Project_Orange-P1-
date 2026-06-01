@@ -1,0 +1,139 @@
+@model IEnumerable<ParkingReservation.Models.ParkingLot>
+@{
+    ViewData["Title"] = "إدارة المصفات";
+}
+
+<div class="owner-shell owner-business">
+    <div class="owner-header owner-business-header">
+        <div>
+            <div class="owner-kicker">إدارة المصفات</div>
+            <h1 class="owner-title">مصفاتي</h1>
+            <p class="owner-subtitle">أضف مصفاً جديداً أو عدّل بيانات مصف موجود وأدر مواقفه.</p>
+        </div>
+        <a class="btn primary-btn" asp-action="CreateParkingLot">
+            <i class="bi bi-plus-circle me-1"></i> إضافة مصف جديد
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="customer-empty">
+            <i class="bi bi-p-square" style="font-size:3rem;color:#cbd5e1;display:block;margin-bottom:1rem"></i>
+            <div class="customer-empty-title">لا توجد مصفات بعد</div>
+            <p class="customer-empty-text">أضف مصفك الأول ليظهر للمستخدمين بعد موافقة الإدارة.</p>
+            <a class="btn primary-btn mt-3" asp-action="CreateParkingLot">
+                <i class="bi bi-plus-circle me-1"></i> إضافة مصف
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="owner-lots-grid">
+            @foreach (var lot in Model)
+            {
+                var totalSpots     = lot.ParkingSpots.Count;
+                var availableSpots = lot.ParkingSpots.Count(s => s.Status == ParkingSpotStatus.Available && s.IsActive);
+                var occupiedSpots  = lot.ParkingSpots.Count(s => s.Status == ParkingSpotStatus.Occupied);
+                var maintenanceSpots = lot.ParkingSpots.Count(s => s.Status == ParkingSpotStatus.Maintenance);
+
+                <div class="owner-lot-card">
+                    <!-- Header -->
+                    <div class="owner-lot-card-header">
+                        <div>
+                            <h2 class="owner-lot-card-name">@lot.Name</h2>
+                            <p class="owner-lot-card-address">
+                                <i class="bi bi-geo-alt me-1"></i>@lot.Address، @lot.City
+                            </p>
+                        </div>
+                        <span class="status-pill @GetLotStatusClass(lot.Status)">@GetLotStatusName(lot.Status)</span>
+                    </div>
+
+                    <!-- Spot summary -->
+                    <div class="owner-lot-spot-summary">
+                        <div class="owner-spot-pill available">
+                            <i class="bi bi-check-circle"></i>
+                            <span>@availableSpots متاح</span>
+                        </div>
+                        @if (occupiedSpots > 0)
+                        {
+                            <div class="owner-spot-pill occupied">
+                                <i class="bi bi-x-circle"></i>
+                                <span>@occupiedSpots مشغول</span>
+                            </div>
+                        }
+                        @if (maintenanceSpots > 0)
+                        {
+                            <div class="owner-spot-pill maintenance">
+                                <i class="bi bi-tools"></i>
+                                <span>@maintenanceSpots صيانة</span>
+                            </div>
+                        }
+                        <div class="owner-spot-pill neutral">
+                            <i class="bi bi-grid"></i>
+                            <span>@totalSpots إجمالي</span>
+                        </div>
+                    </div>
+
+                    <!-- Meta -->
+                    <div class="owner-lot-card-meta">
+                        <span><i class="bi bi-clock me-1"></i>@lot.OpeningTime.ToString(@"hh\:mm") – @lot.ClosingTime.ToString(@"hh\:mm")</span>
+                        <strong>@lot.HourlyRate.ToString("0.00") د.أ / ساعة</strong>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="owner-lot-card-actions">
+                        <a asp-action="ParkingSpots" asp-route-parkingLotId="@lot.Id"
+                           class="btn primary-btn btn-sm flex-fill">
+                            <i class="bi bi-grid me-1"></i> إدارة المواقف
+                        </a>
+                        <a asp-action="EditParkingLot" asp-route-id="@lot.Id"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+
+                    @if (lot.Status == ParkingLotStatus.Pending)
+                    {
+                        <div class="owner-lot-pending-note">
+                            <i class="bi bi-hourglass-split me-1"></i>
+                            بانتظار موافقة الإدارة قبل الظهور للمستخدمين
+                        </div>
+                    }
+                    else if (lot.Status == ParkingLotStatus.Rejected)
+                    {
+                        <div class="owner-lot-pending-note" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5">
+                            <i class="bi bi-x-circle me-1"></i>
+                            تم رفض هذا المصف من قِبل الإدارة
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@functions {
+    private static string GetLotStatusClass(ParkingLotStatus s) => s switch
+    {
+        ParkingLotStatus.Approved  => "status-approved",
+        ParkingLotStatus.Pending   => "status-pending",
+        ParkingLotStatus.Rejected  => "status-rejected",
+        ParkingLotStatus.Suspended => "status-suspended",
+        _ => ""
+    };
+    private static string GetLotStatusName(ParkingLotStatus s) => s switch
+    {
+        ParkingLotStatus.Approved  => "معتمد",
+        ParkingLotStatus.Pending   => "قيد المراجعة",
+        ParkingLotStatus.Rejected  => "مرفوض",
+        ParkingLotStatus.Suspended => "معلّق",
+        _ => s.ToString()
+    };
+}

@@ -1,123 +1,120 @@
 @model ParkingReservation.Models.ViewModels.AdminDashboardViewModel
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "لوحة تحكم الإدارة";
+    var maxUsers = Math.Max(1, Model.NewUsersGrowth.Any() ? Model.NewUsersGrowth.Max(item => item.Value) : 1);
+    var maxReservations = Math.Max(1, Model.ReservationsStatistics.Any() ? Model.ReservationsStatistics.Max(item => item.Value) : 1);
+    var maxRevenue = Math.Max(1, Model.RevenueAnalytics.Any() ? Model.RevenueAnalytics.Max(item => item.Value) : 1);
 }
 
-<div class="page-shell">
-    <div class="dashboard-header">
-        <div>
-            <h1 class="dashboard-title">Admin Dashboard</h1>
-            <p class="dashboard-subtitle">Review parking lots and manage approval status.</p>
-        </div>
-        @if (Model.SelectedStatus.HasValue)
-        {
-            <a class="btn btn-outline-secondary" asp-action="Dashboard">Clear filter</a>
-        }
-    </div>
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-title">لوحة الإدارة</div>
+        <a class="active" asp-action="Dashboard"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+        <a asp-action="Users"><i class="bi bi-people"></i> إدارة المستخدمين</a>
+        <a asp-action="ApproveParkingLots"><i class="bi bi-p-square"></i> اعتماد المصفات</a>
+        <a asp-action="Reservations"><i class="bi bi-calendar2-check"></i> متابعة الحجوزات</a>
+    </aside>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-    }
-
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-lg">
-            <a class="metric-card" asp-action="Dashboard">
-                <div class="metric-label">Total</div>
-                <div class="metric-value">@Model.TotalParkingLotsCount</div>
-            </a>
-        </div>
-        <div class="col-6 col-lg">
-            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Pending">
-                <div class="metric-label">Pending</div>
-                <div class="metric-value">@Model.PendingParkingLotsCount</div>
-            </a>
-        </div>
-        <div class="col-6 col-lg">
-            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Approved">
-                <div class="metric-label">Approved</div>
-                <div class="metric-value">@Model.ApprovedParkingLotsCount</div>
-            </a>
-        </div>
-        <div class="col-6 col-lg">
-            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Rejected">
-                <div class="metric-label">Rejected</div>
-                <div class="metric-value">@Model.RejectedParkingLotsCount</div>
-            </a>
-        </div>
-        <div class="col-6 col-lg">
-            <a class="metric-card" asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Suspended">
-                <div class="metric-label">Suspended</div>
-                <div class="metric-value">@Model.SuspendedParkingLotsCount</div>
-            </a>
-        </div>
-    </div>
-
-    <div class="content-panel">
-        <div class="panel-header">
-            <h2 class="panel-title">Parking lots</h2>
-            @if (Model.SelectedStatus.HasValue)
-            {
-                <span class="status-pill @GetStatusClass(Model.SelectedStatus.Value)">@Model.SelectedStatus</span>
-            }
-        </div>
-
-        @if (!Model.ParkingLots.Any())
-        {
-            <div class="empty-state">
-                <div class="empty-state-title">No parking lots found</div>
-                <p class="empty-state-text">Parking lots will appear here after owners add them.</p>
+    <main class="admin-main">
+        <div class="admin-header">
+            <div>
+                <span>مركز التحكم بالنظام</span>
+                <h1>لوحة تحكم الإدارة</h1>
+                <p>تابع المستخدمين وأصحاب المواقف والمصفات والموافقات والحجوزات وتحليلات الإيرادات.</p>
             </div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-hover table-dashboard">
-                    <thead>
-                        <tr>
-                            <th>Parking lot</th>
-                            <th>Owner</th>
-                            <th>City</th>
-                            <th>Spots</th>
-                            <th>Status</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var parkingLot in Model.ParkingLots)
+        </div>
+
+        <div class="admin-kpi-grid">
+            <div class="admin-kpi"><span>إجمالي المستخدمين</span><strong>@Model.TotalUsersCount</strong></div>
+            <div class="admin-kpi"><span>إجمالي أصحاب المواقف</span><strong>@Model.TotalOwnersCount</strong></div>
+            <div class="admin-kpi"><span>إجمالي المصفات</span><strong>@Model.TotalParkingLotsCount</strong></div>
+            <div class="admin-kpi"><span>إجمالي الحجوزات</span><strong>@Model.TotalReservationsCount</strong></div>
+            <div class="admin-kpi warning"><span>طلبات بانتظار الموافقة</span><strong>@Model.PendingParkingLotsCount</strong></div>
+        </div>
+
+        <div class="admin-grid">
+            <section class="admin-card">
+                <h2>نمو المستخدمين الجدد</h2>
+                <div class="admin-chart">
+                    @foreach (var item in Model.NewUsersGrowth)
                     {
-                        <tr>
-                            <td>
-                                <div class="fw-semibold">@parkingLot.Name</div>
-                                <div class="small text-muted">@parkingLot.Address</div>
-                            </td>
-                            <td>
-                                <div>@parkingLot.Owner?.FullName</div>
-                                <div class="small text-muted">@parkingLot.Owner?.Email</div>
-                            </td>
-                            <td>@parkingLot.City</td>
-                            <td>@parkingLot.ParkingSpots.Count</td>
-                            <td><span class="status-pill @GetStatusClass(parkingLot.Status)">@parkingLot.Status</span></td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="ParkingLotDetails" asp-route-id="@parkingLot.Id">Details</a>
-                                <form asp-action="ChangeParkingLotStatus" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="@parkingLot.Id" />
-                                    <input type="hidden" name="status" value="@ParkingLotStatus.Approved" />
-                                    <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
-                                </form>
-                                <form asp-action="ChangeParkingLotStatus" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="@parkingLot.Id" />
-                                    <input type="hidden" name="status" value="@ParkingLotStatus.Rejected" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
-                                </form>
-                            </td>
-                        </tr>
+                        var height = Math.Max(8, (int)(item.Value / maxUsers * 100));
+                        <div><span style="height:@height%"></span><small>@item.Label</small></div>
                     }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
+                </div>
+            </section>
+
+            <section class="admin-card">
+                <h2>إحصائيات الحجوزات</h2>
+                <div class="admin-chart teal">
+                    @foreach (var item in Model.ReservationsStatistics)
+                    {
+                        var height = Math.Max(8, (int)(item.Value / maxReservations * 100));
+                        <div><span style="height:@height%"></span><small>@item.Label</small></div>
+                    }
+                </div>
+            </section>
+
+            <section class="admin-card">
+                <h2>تحليلات الإيرادات</h2>
+                <div class="admin-chart green">
+                    @foreach (var item in Model.RevenueAnalytics)
+                    {
+                        var height = Math.Max(8, (int)(item.Value / maxRevenue * 100));
+                        <div><span style="height:@height%"></span><small>@item.Label</small></div>
+                    }
+                </div>
+            </section>
+
+            <section class="admin-card admin-wide">
+                <div class="admin-card-header">
+                    <h2>قائمة الموافقات</h2>
+                    <a asp-action="Dashboard" asp-route-status="@ParkingLotStatus.Pending">عرض المعلّقة</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dashboard">
+                        <thead><tr><th>المصف</th><th>المالك</th><th>المدينة</th><th>الحالة</th><th class="text-end">الإجراءات</th></tr></thead>
+                        <tbody>
+                        @foreach (var lot in Model.ParkingLots.Take(8))
+                        {
+                            <tr>
+                                <td>@lot.Name</td>
+                                <td>@lot.Owner?.FullName</td>
+                                <td>@lot.City</td>
+                                <td><span class="status-pill @GetStatusClass(lot.Status)">@GetStatusName(lot.Status)</span></td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-secondary" asp-action="ParkingLotDetails" asp-route-id="@lot.Id">التفاصيل</a></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="admin-card">
+                <h2>آخر التسجيلات</h2>
+                @foreach (var user in Model.RecentUsers)
+                {
+                    <div class="admin-list-item"><strong>@user.FullName</strong><span>@user.Email</span></div>
+                }
+            </section>
+
+            <section class="admin-card">
+                <h2>المصفات المضافة حديثاً</h2>
+                @foreach (var lot in Model.RecentlyAddedParkingLots)
+                {
+                    <div class="admin-list-item"><strong>@lot.Name</strong><span>@lot.Owner?.Email</span></div>
+                }
+            </section>
+
+            <section class="admin-card">
+                <h2>سجل النشاط</h2>
+                @foreach (var log in Model.ActivityLogs)
+                {
+                    <div class="admin-log-item">@log</div>
+                }
+            </section>
+        </div>
+    </main>
 </div>
 
 @functions {
@@ -130,6 +127,18 @@
             ParkingLotStatus.Rejected => "status-rejected",
             ParkingLotStatus.Suspended => "status-suspended",
             _ => "status-suspended"
+        };
+    }
+
+    private static string GetStatusName(ParkingLotStatus status)
+    {
+        return status switch
+        {
+            ParkingLotStatus.Pending => "قيد المراجعة",
+            ParkingLotStatus.Approved => "معتمد",
+            ParkingLotStatus.Rejected => "مرفوض",
+            ParkingLotStatus.Suspended => "معلّق",
+            _ => status.ToString()
         };
     }
 }

@@ -1,0 +1,84 @@
+@model ParkingReservation.Models.Vehicle
+
+@{
+    var makeModels = new Dictionary<string, List<string>>
+    {
+        ["تويوتا"] = new() { "كامري", "كورولا", "راف 4", "هايلاندر", "لاند كروزر", "يارس", "برادو", "فورتشنر", "أفالون", "C-HR" },
+        ["هيونداي"] = new() { "إيلانترا", "سوناتا", "توسان", "سانتافي", "كريتا", "أكسنت", "فيلوستر", "كونا", "أيونيك", "باليسيد" },
+        ["كيا"] = new() { "سيراتو", "أوبتيما", "سبورتاج", "سورينتو", "ريو", "بيكانتو", "ستينغر", "كارنيفال", "EV6", "تيلورايد" },
+        ["نيسان"] = new() { "التيما", "صني", "إكس-تريل", "باترول", "مورانو", "أرمادا", "ماكسيما", "سنترا", "قاشقاي", "نافارا" },
+        ["هوندا"] = new() { "أكورد", "سيفيك", "CR-V", "HR-V", "بايلوت", "أوديسي", "ريدجلاين", "إنساين", "باسبورت", "جاز" },
+        ["فورد"] = new() { "فيوستا", "فوكس", "موستانج", "F-150", "إكسبلورر", "إيدج", "برونكو", "إسكيب", "رينجر", "إكسبيديشن" },
+        ["شيفروليه"] = new() { "كروز", "ماليبو", "كابتيفا", "تاهو", "سيلفرادو", "إكوينوكس", "تريلبليزر", "ترافيرس", "بلازر", "كورفيت" },
+        ["مرسيدس"] = new() { "C200", "C300", "E200", "E300", "S500", "GLC", "GLE", "GLS", "A200", "CLA" },
+        ["بي إم دبليو"] = new() { "316i", "318i", "320i", "520i", "525i", "730i", "X3", "X5", "X6", "M3" },
+        ["أودي"] = new() { "A3", "A4", "A6", "A8", "Q3", "Q5", "Q7", "Q8", "TT", "RS6" },
+        ["لكزس"] = new() { "ES300", "ES350", "IS300", "RX350", "LX570", "GX460", "UX200", "NX300", "LS500", "LC500" },
+        ["جيب"] = new() { "رانجلر", "جراند شيروكي", "كومباس", "رينيغيد", "جلاديتور", "شيروكي", "أفينجر" },
+        ["فولكس واجن"] = new() { "جولف", "باسات", "تيغوان", "بولو", "أرتيون", "تواريغ", "T-Roc", "T-Cross", "ID.4", "أماروك" },
+        ["رينو"] = new() { "ميغان", "كوليوس", "داستر", "كليو", "أركانا", "كبتشر", "سيمبول", "تاليسمان" },
+        ["مازدا"] = new() { "مازدا 3", "مازدا 6", "CX-3", "CX-5", "CX-9", "MX-5", "BT-50" },
+        ["ميتسوبيشي"] = new() { "لانسر", "غالانت", "أوتلاندر", "ASX", "إكليبس كروس", "باجيرو", "L200", "ميراج" },
+        ["سوزوكي"] = new() { "سويفت", "فيتارا", "جراند فيتارا", "جيمني", "سيليريو", "ألتو", "إرتيغا", "إس-كروس" },
+        ["بيجو"] = new() { "206", "207", "208", "308", "508", "2008", "3008", "5008", "ريفتر" },
+        ["إم جي"] = new() { "MG3", "MG5", "MG6", "HS", "RX5", "ZS", "One", "MG4" },
+        ["جي إي سي"] = new() { "GA4", "GA6", "GA8", "GS3", "GS4", "GS8", "M6", "M8" },
+    };
+
+    var colors = new List<string>
+    {
+        "أبيض", "أسود", "رمادي", "فضي", "أحمر", "أزرق", "أزرق داكن",
+        "أخضر", "بيج", "بني", "ذهبي", "برتقالي", "أصفر", "بنفسجي",
+        "وردي", "كحلي", "رمادي داكن", "أبيض لؤلؤي", "أسود لامع"
+    };
+}
+
+<!-- Make -->
+<div class="col-md-6">
+    <label asp-for="Make" class="form-label">الماركة</label>
+    <input asp-for="Make" id="makeInput" list="makeList" class="form-control auth-input"
+           placeholder="اختر أو اكتب الماركة" autocomplete="off" />
+    <datalist id="makeList">
+        @foreach (var make in makeModels.Keys)
+        {
+            <option value="@make" />
+        }
+    </datalist>
+</div>
+
+<!-- Model -->
+<div class="col-md-6">
+    <label asp-for="Model" class="form-label">الموديل</label>
+    <input asp-for="Model" id="modelInput" list="modelList" class="form-control auth-input"
+           placeholder="اختر أو اكتب الموديل" autocomplete="off" />
+    <datalist id="modelList"></datalist>
+</div>
+
+<!-- Color -->
+<div class="col-md-6">
+    <label asp-for="Color" class="form-label">اللون</label>
+    <input asp-for="Color" list="colorList" class="form-control auth-input"
+           placeholder="اختر أو اكتب اللون" autocomplete="off" />
+    <datalist id="colorList">
+        @foreach (var color in colors)
+        {
+            <option value="@color" />
+        }
+    </datalist>
+</div>
+
+<script>
+    (function () {
+        const makeModels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(makeModels));
+        const makeInput  = document.getElementById('makeInput');
+        const modelList  = document.getElementById('modelList');
+
+        function updateModels() {
+            const models = makeModels[makeInput.value.trim()] || [];
+            modelList.innerHTML = models.map(m => `<option value="${m}"></option>`).join('');
+        }
+
+        makeInput.addEventListener('input', updateModels);
+        updateModels(); // populate on load for edit mode
+    })();
+</script>

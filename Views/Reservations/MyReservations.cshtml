@@ -1,0 +1,138 @@
+@model IEnumerable<ParkingReservation.Models.Reservation>
+@{
+    ViewData["Title"] = "حجوزاتي";
+}
+
+<div class="customer-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">حجوزاتي</div>
+            <h1 class="customer-title">الحجوزات الخاصة بي</h1>
+            <p class="customer-subtitle">تابع الحجوزات التي قمت بإنشائها.</p>
+        </div>
+        <div class="my-res-header-btns">
+            <a class="btn btn-outline-secondary" asp-controller="Vehicles" asp-action="Index">
+                <i class="bi bi-car-front me-1"></i> مركباتي
+            </a>
+            <a class="btn primary-btn" asp-controller="ParkingLots" asp-action="Index">
+                <i class="bi bi-search me-1"></i> تصفح المصفات
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <section class="customer-panel">
+        <div class="customer-panel-header">
+            <h2>قائمة الحجوزات</h2>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="customer-empty customer-empty-panel">
+                <div class="customer-empty-title">لا توجد حجوزات بعد</div>
+                <p class="customer-empty-text">ابدأ بتصفح المصفات واحجز موقفك الأول.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table customer-table">
+                    <thead>
+                        <tr>
+                            <th>المصف</th>
+                            <th>الموقف</th>
+                            <th>المركبة</th>
+                            <th>البداية</th>
+                            <th>النهاية</th>
+                            <th>السعر</th>
+                            <th>الحالة</th>
+                            <th>الدفع</th>
+                            <th class="text-end">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var reservation in Model)
+                    {
+                        var isPaid    = reservation.Payment?.Status == PaymentStatus.Paid;
+                        var canPay    = reservation.Status == ReservationStatus.Confirmed && reservation.Payment == null;
+                        var canCancel = !isPaid && (reservation.Status == ReservationStatus.Pending || reservation.Status == ReservationStatus.Confirmed);
+                        <tr>
+                            <td>@reservation.ParkingSpot?.ParkingLot?.Name</td>
+                            <td>@reservation.ParkingSpot?.SpotNumber</td>
+                            <td>@(reservation.Vehicle?.PlateNumber ?? "-")</td>
+                            <td>@reservation.StartTime.ToString("yyyy/MM/dd HH:mm")</td>
+                            <td>@reservation.EndTime.ToString("yyyy/MM/dd HH:mm")</td>
+                            <td>@reservation.TotalPrice.ToString("0.00")</td>
+                            <td><span class="customer-status @GetStatusClass(reservation.Status)">@GetReservationStatusName(reservation.Status)</span></td>
+                            <td>
+                                @if (reservation.Payment?.Status == PaymentStatus.Refunded)
+                                {
+                                    <span class="status-pill status-suspended">مسترد</span>
+                                }
+                                else if (reservation.Payment?.Status == PaymentStatus.Paid)
+                                {
+                                    <span class="status-pill status-approved">مدفوع</span>
+                                }
+                                else if (reservation.Status == ReservationStatus.Confirmed)
+                                {
+                                    <span class="status-pill status-pending">غير مدفوع</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-end" style="white-space:nowrap">
+                                <div class="res-action-btns">
+                                    @if (canPay)
+                                    {
+                                        <a class="btn btn-sm customer-card-btn"
+                                           asp-controller="Payments"
+                                           asp-action="Pay"
+                                           asp-route-reservationId="@reservation.Id">ادفع الآن</a>
+                                    }
+                                    @if (canCancel)
+                                    {
+                                        <form asp-controller="Reservations" asp-action="Cancel" method="post"
+                                              onsubmit="return confirm('هل أنت متأكد من إلغاء هذا الحجز؟')">
+                                            <input type="hidden" name="id" value="@reservation.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">إلغاء</button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>
+
+@functions {
+    private static string GetReservationStatusName(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Pending => "قيد الانتظار",
+        ReservationStatus.Confirmed => "مؤكد",
+        ReservationStatus.Cancelled => "ملغي",
+        ReservationStatus.Completed => "مكتمل",
+        _ => status.ToString()
+    };
+
+    private static string GetStatusClass(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Confirmed => "status-confirmed",
+        ReservationStatus.Cancelled => "status-cancelled",
+        ReservationStatus.Completed => "status-completed",
+        _ => ""
+    };
+}

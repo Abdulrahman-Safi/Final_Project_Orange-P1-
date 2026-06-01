@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ParkingReservation.Data;
 using ParkingReservation.Models;
+using ParkingReservation.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,11 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
+    .AddErrorDescriber<ArabicIdentityErrorDescriber>()
+    .AddSignInManager<CustomSignInManager>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddHostedService<ReservationCompletionService>();
 
 var app = builder.Build();
 
@@ -69,7 +73,7 @@ static async Task SeedDefaultAdminAsync(IServiceProvider serviceProvider, IConfi
     var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var email = configuration["SeedAdmin:Email"];
     var password = configuration["SeedAdmin:Password"];
-    var fullName = configuration["SeedAdmin:FullName"] ?? "System Admin";
+    var fullName = configuration["SeedAdmin:FullName"] ?? "مدير النظام";
 
     if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
     {
@@ -93,7 +97,7 @@ static async Task SeedDefaultAdminAsync(IServiceProvider serviceProvider, IConfi
 
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException("Failed to create the default admin user.");
+            throw new InvalidOperationException("فشل إنشاء حساب الإدارة الافتراضي.");
         }
     }
 

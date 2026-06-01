@@ -1,0 +1,129 @@
+@model ParkingReservation.Models.ViewModels.UserHomeViewModel
+@{
+    ViewData["Title"] = "الرئيسية";
+}
+
+<div class="user-home-shell">
+    <section class="user-hero">
+        <div>
+            <div class="user-kicker">منصة الحجز</div>
+            <h1>احجز موقفك بسرعة</h1>
+            <p>ابحث عن المصفات المتاحة، تابع حجوزاتك، وابدأ حجزاً جديداً من لوحة واحدة مخصصة للمستخدم.</p>
+        </div>
+        <a class="btn user-primary-btn" asp-controller="ParkingLots" asp-action="Index">
+            <i class="bi bi-lightning-charge"></i>
+            حجز سريع
+        </a>
+    </section>
+
+    <div class="user-stats-grid">
+        <div class="user-stat-card">
+            <span>المواقف المتاحة</span>
+            <strong>@Model.AvailableSpotsCount</strong>
+        </div>
+        <div class="user-stat-card">
+            <span>الحجوزات النشطة</span>
+            <strong>@Model.ActiveReservations.Count</strong>
+        </div>
+        <div class="user-stat-card">
+            <span>سجل الحجوزات</span>
+            <strong>@Model.ReservationHistory.Count</strong>
+        </div>
+        <div class="user-stat-card">
+            <span>المفضلة</span>
+            <strong>@Model.FavoriteParkingLots.Count</strong>
+        </div>
+    </div>
+
+    <section class="customer-filter user-search-panel">
+        <form asp-controller="ParkingLots" asp-action="Index" method="get" class="user-search-form">
+            <div>
+                <label class="form-label">من</label>
+                <input type="datetime-local" name="startTime" class="form-control auth-input" />
+            </div>
+            <div>
+                <label class="form-label">إلى</label>
+                <input type="datetime-local" name="endTime" class="form-control auth-input" />
+            </div>
+            <div class="customer-filter-actions">
+                <button class="btn user-primary-btn" type="submit">بحث وفلترة</button>
+            </div>
+        </form>
+    </section>
+
+    <div class="user-dashboard-grid">
+        <section class="user-panel user-panel-large">
+            <div class="user-panel-header">
+                <h2>المصفات القريبة</h2>
+                <a asp-controller="ParkingLots" asp-action="Index">عرض الكل</a>
+            </div>
+            <div class="user-lot-list">
+                @foreach (var lot in Model.NearbyParkingLots)
+                {
+                    var available = lot.ParkingSpots.Count(spot => spot.IsActive && spot.Status == ParkingSpotStatus.Available);
+                    <a class="user-lot-row" asp-controller="ParkingLots" asp-action="Details" asp-route-id="@lot.Id">
+                        <div>
+                            <strong>@lot.Name</strong>
+                            <span>@lot.City - @lot.Address</span>
+                        </div>
+                        <em>@available متاح</em>
+                    </a>
+                }
+            </div>
+        </section>
+
+        <section class="user-panel">
+            <div class="user-panel-header">
+                <h2>الحجوزات النشطة</h2>
+                <a asp-controller="Reservations" asp-action="MyReservations">عرض</a>
+            </div>
+            @if (!Model.ActiveReservations.Any())
+            {
+                <p class="user-empty-text">لا توجد حجوزات نشطة.</p>
+            }
+            else
+            {
+                @foreach (var reservation in Model.ActiveReservations)
+                {
+                    <div class="user-reservation-item">
+                        <strong>@reservation.ParkingSpot?.ParkingLot?.Name</strong>
+                        <span>@reservation.StartTime.ToString("yyyy/MM/dd HH:mm")</span>
+                    </div>
+                }
+            }
+        </section>
+
+        <section class="user-panel">
+            <div class="user-panel-header">
+                <h2>المصفات المفضلة</h2>
+            </div>
+            @foreach (var lot in Model.FavoriteParkingLots)
+            {
+                <div class="user-reservation-item">
+                    <strong>@lot.Name</strong>
+                    <span>@lot.City</span>
+                </div>
+            }
+        </section>
+
+        <section class="user-panel user-panel-large">
+            <div class="user-panel-header">
+                <h2>سجل الحجوزات</h2>
+            </div>
+            @if (!Model.ReservationHistory.Any())
+            {
+                <p class="user-empty-text">لا يوجد سجل حجوزات بعد.</p>
+            }
+            else
+            {
+                @foreach (var reservation in Model.ReservationHistory)
+                {
+                    <div class="user-reservation-item">
+                        <strong>@reservation.ParkingSpot?.ParkingLot?.Name</strong>
+                        <span>@reservation.TotalPrice.ToString("0.00")</span>
+                    </div>
+                }
+            }
+        </section>
+    </div>
+</div>

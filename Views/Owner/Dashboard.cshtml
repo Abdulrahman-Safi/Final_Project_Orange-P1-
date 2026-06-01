@@ -1,119 +1,137 @@
 @model ParkingReservation.Models.ViewModels.OwnerDashboardViewModel
 @{
-    ViewData["Title"] = "Owner Dashboard";
+    ViewData["Title"] = "لوحة تحكم صاحب المصف";
+    var maxReservations = Math.Max(1, Model.ReservationsPerDay.Any() ? Model.ReservationsPerDay.Max(item => item.Value) : 1);
+    var maxRevenue = Math.Max(1, Model.RevenuePerMonth.Any() ? Model.RevenuePerMonth.Max(item => item.Value) : 1);
 }
 
-<div class="owner-shell">
-    <div class="owner-header">
+<div class="owner-shell owner-business">
+    <div class="owner-header owner-business-header">
         <div>
-            <div class="owner-kicker">Parking owner</div>
-            <h1 class="owner-title">Owner Dashboard</h1>
-            <p class="owner-subtitle">Manage your parking lots, spots, and live availability.</p>
+            <div class="owner-kicker">إدارة الأعمال</div>
+            <h1 class="owner-title">لوحة تحكم صاحب المصف</h1>
+            <p class="owner-subtitle">أدر المصفات والموافقات والحجوزات والإيرادات الشهرية.</p>
         </div>
-        <a class="btn owner-primary-btn" asp-action="CreateParkingLot">Add parking lot</a>
-    </div>
-
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-    }
-
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
-            <div class="owner-metric">
-                <div class="owner-metric-label">Parking lots</div>
-                <div class="owner-metric-value">@Model.ParkingLotsCount</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="owner-metric">
-                <div class="owner-metric-label">Total spots</div>
-                <div class="owner-metric-value">@Model.ParkingSpotsCount</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="owner-metric">
-                <div class="owner-metric-label">Available spots</div>
-                <div class="owner-metric-value">@Model.AvailableSpotsCount</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="owner-metric">
-                <div class="owner-metric-label">Active reservations</div>
-                <div class="owner-metric-value">@Model.ActiveReservationsCount</div>
-            </div>
+        <div class="owner-action-row">
+            <a class="btn owner-primary-btn" asp-action="CreateParkingLot"><i class="bi bi-plus-circle"></i> إضافة مصف</a>
+            <a class="btn btn-outline-secondary" asp-action="Reservations"><i class="bi bi-calendar-check"></i> عرض الحجوزات</a>
         </div>
     </div>
 
-    <div class="owner-panel">
-        <div class="owner-panel-header">
-            <h2 class="owner-panel-title">Your parking lots</h2>
+    <div class="owner-kpi-grid">
+        <div class="owner-kpi-card">
+            <div class="owner-kpi-icon" style="background:#e7f1ff;color:#0d6efd"><i class="bi bi-p-square-fill"></i></div>
+            <div class="owner-kpi-body"><span>إجمالي المصفات</span><strong>@Model.ParkingLotsCount</strong></div>
         </div>
+        <div class="owner-kpi-card">
+            <div class="owner-kpi-icon" style="background:#ccfbf1;color:#0d9488"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+            <div class="owner-kpi-body"><span>إجمالي المواقف</span><strong>@Model.ParkingSpotsCount</strong></div>
+        </div>
+        <div class="owner-kpi-card">
+            <div class="owner-kpi-icon" style="background:#d1fae5;color:#059669"><i class="bi bi-calendar-check-fill"></i></div>
+            <div class="owner-kpi-body"><span>الحجوزات النشطة</span><strong>@Model.ActiveReservationsCount</strong></div>
+        </div>
+        <div class="owner-kpi-card">
+            <div class="owner-kpi-icon" style="background:#fef9c3;color:#ca8a04"><i class="bi bi-cash-coin"></i></div>
+            <div class="owner-kpi-body"><span>إيراد الشهر</span><strong>@Model.MonthlyRevenue.ToString("0.00") <small style="font-size:.9rem;font-weight:600;color:#667085">د.أ</small></strong></div>
+        </div>
+    </div>
 
-        @if (!Model.ParkingLots.Any())
-        {
-            <div class="owner-empty">
-                <div class="owner-empty-title">No parking lots yet</div>
-                <p class="owner-empty-text">Add your first parking lot so the admin can review it.</p>
-                <a class="btn owner-primary-btn" asp-action="CreateParkingLot">Add parking lot</a>
+    <div class="owner-dashboard-grid">
+        <section class="owner-widget">
+            <div class="owner-widget-header"><h2>الحجوزات اليومية</h2></div>
+            <div class="mini-chart">
+                @foreach (var item in Model.ReservationsPerDay)
+                {
+                    var height = Math.Max(8, (int)(item.Value / maxReservations * 100));
+                    <div class="mini-chart-bar">
+                        <span style="height:@height%"></span>
+                        <small>@item.Label</small>
+                    </div>
+                }
             </div>
-        }
-        else
-        {
+        </section>
+
+        <section class="owner-widget">
+            <div class="owner-widget-header"><h2>الإيرادات الشهرية</h2></div>
+            <div class="mini-chart revenue-chart">
+                @foreach (var item in Model.RevenuePerMonth)
+                {
+                    var height = Math.Max(8, (int)(item.Value / maxRevenue * 100));
+                    <div class="mini-chart-bar">
+                        <span style="height:@height%"></span>
+                        <small>@item.Label</small>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="owner-widget owner-widget-wide">
+            <div class="owner-widget-header">
+                <h2>أحدث الحجوزات</h2>
+                <a asp-action="Reservations">عرض الكل</a>
+            </div>
             <div class="table-responsive">
-                <table class="table table-hover owner-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>City</th>
-                            <th>Hourly rate</th>
-                            <th>Status</th>
-                            <th>Spots</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
+                <table class="table owner-table">
+                    <thead><tr><th>المستخدم</th><th>المصف</th><th>الموقف</th><th>الحالة</th><th>المبلغ</th></tr></thead>
                     <tbody>
-                    @foreach (var parkingLot in Model.ParkingLots)
+                    @foreach (var reservation in Model.RecentReservations)
                     {
                         <tr>
-                            <td>
-                                <div class="fw-semibold">@parkingLot.Name</div>
-                                <div class="small text-muted">@parkingLot.Address</div>
-                            </td>
-                            <td>@parkingLot.City</td>
-                            <td>@parkingLot.HourlyRate.ToString("0.00")</td>
-                            <td>
-                                <span class="owner-status @GetLotStatusClass(parkingLot.Status)">@parkingLot.Status</span>
-                            </td>
-                            <td>
-                                @parkingLot.ParkingSpots.Count
-                                <span class="text-muted small">
-                                    (@parkingLot.ParkingSpots.Count(spot => spot.Status == ParkingSpotStatus.Available) available)
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary" asp-action="ParkingSpots" asp-route-parkingLotId="@parkingLot.Id">Spots</a>
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="EditParkingLot" asp-route-id="@parkingLot.Id">Edit</a>
-                            </td>
+                            <td>@reservation.User?.FullName</td>
+                            <td>@reservation.ParkingSpot?.ParkingLot?.Name</td>
+                            <td>@reservation.ParkingSpot?.SpotNumber</td>
+                            <td>@GetReservationStatusName(reservation.Status)</td>
+                            <td>@reservation.TotalPrice.ToString("0.00")</td>
                         </tr>
                     }
                     </tbody>
                 </table>
             </div>
-        }
+        </section>
+
+        <section class="owner-widget">
+            <div class="owner-widget-header"><h2>أكثر المصفات حجزاً</h2></div>
+            @foreach (var lot in Model.MostBookedParkingLots)
+            {
+                <div class="owner-list-item">
+                    <strong>@lot.Name</strong>
+                    <span>@lot.ParkingSpots.Count موقف</span>
+                </div>
+            }
+        </section>
+
+        <section class="owner-widget">
+            <div class="owner-widget-header"><h2>ملخص الإيرادات</h2></div>
+            <div class="revenue-summary">
+                <span>إيراد هذا الشهر</span>
+                <strong>@Model.MonthlyRevenue.ToString("0.00") <small style="font-size:1rem;font-weight:600;color:#667085">د.أ</small></strong>
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.25rem">
+                    <div style="font-size:.85rem;color:#667085">
+                        <i class="bi bi-calendar-check me-1 text-success"></i>
+                        الحجوزات النشطة: <strong style="color:#172033;font-size:.85rem">@Model.ActiveReservationsCount</strong>
+                    </div>
+                    <div style="font-size:.85rem;color:#667085">
+                        <i class="bi bi-p-square me-1 text-primary"></i>
+                        المصفات: <strong style="color:#172033;font-size:.85rem">@Model.ParkingLotsCount</strong>
+                    </div>
+                </div>
+                <p style="margin-top:.5rem">يتم احتساب الإيراد من الحجوزات المؤكدة والمكتملة.</p>
+            </div>
+        </section>
     </div>
 </div>
 
 @functions {
-    private static string GetLotStatusClass(ParkingLotStatus status)
+    private static string GetReservationStatusName(ReservationStatus status)
     {
         return status switch
         {
-            ParkingLotStatus.Pending => "owner-status-pending",
-            ParkingLotStatus.Approved => "owner-status-approved",
-            ParkingLotStatus.Rejected => "owner-status-rejected",
-            ParkingLotStatus.Suspended => "owner-status-suspended",
-            _ => "owner-status-suspended"
+            ReservationStatus.Pending => "بانتظار الموافقة",
+            ReservationStatus.Confirmed => "مؤكد",
+            ReservationStatus.Cancelled => "ملغي",
+            ReservationStatus.Completed => "مكتمل",
+            _ => status.ToString()
         };
     }
 }

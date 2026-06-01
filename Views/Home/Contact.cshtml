@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "تواصل معنا";
+}
+
+<div class="info-page-shell">
+    <div class="info-hero info-hero-img"
+         style="background-image:url('https://images.unsplash.com/photo-1590674899484-13da0d46e2f8?w=1440&q=80&fit=crop')">
+        <div class="info-hero-icon"><i class="bi bi-envelope-heart-fill"></i></div>
+        <div class="info-kicker">تواصل معنا</div>
+        <h1>نسعد بسماعك</h1>
+        <p>هل لديك سؤال، اقتراح، أو مشكلة تريد الإبلاغ عنها؟ راسلنا وسنرد عليك في أقرب وقت.</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success text-center mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="contact-grid">
+        <section class="customer-panel">
+            <div class="customer-panel-header"><h2>أرسل رسالة</h2></div>
+            <form asp-action="ContactSubmit" method="post" class="p-4 row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">الاسم الكامل</label>
+                    <input type="text" name="name" class="form-control auth-input" placeholder="أدخل اسمك" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">البريد الإلكتروني</label>
+                    <input type="email" name="email" class="form-control auth-input" placeholder="example@email.com" required />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">الموضوع</label>
+                    <input type="text" name="subject" class="form-control auth-input" placeholder="موضوع رسالتك" required />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">الرسالة</label>
+                    <textarea name="message" class="form-control auth-input" rows="5" placeholder="اكتب رسالتك هنا..." required></textarea>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn primary-btn w-100">
+                        <i class="bi bi-send-fill me-2"></i> إرسال الرسالة
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <div class="contact-info-column">
+            <div class="contact-info-card">
+                <div class="contact-info-icon"><i class="bi bi-envelope"></i></div>
+                <h3>البريد الإلكتروني</h3>
+                <p>support@parkingapp.com</p>
+            </div>
+            <div class="contact-info-card">
+                <div class="contact-info-icon"><i class="bi bi-telephone"></i></div>
+                <h3>الهاتف</h3>
+                <p>+962 79 000 0000</p>
+            </div>
+            <div class="contact-info-card">
+                <div class="contact-info-icon"><i class="bi bi-clock"></i></div>
+                <h3>ساعات العمل</h3>
+                <p>
+                    الأحد – الخميس: 7 ص – 11:59 م<br>
+                    الجمعة: 1 م – 11:59 م<br>
+                    السبت: 10 ص – 10 م
+                </p>
+            </div>
+            <div class="contact-info-card">
+                <div class="contact-info-icon"><i class="bi bi-geo-alt"></i></div>
+                <h3>العنوان</h3>
+                <p>عمّان، الأردن</p>
+            </div>
+        </div>
+    </div>
+</div>

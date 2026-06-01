@@ -70,13 +70,42 @@ namespace ParkingReservation.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation("User logged in.");
-                return LocalRedirect(returnUrl);
+
+                // Respect returnUrl if it was set by [Authorize] redirect
+                if (!string.IsNullOrEmpty(returnUrl) && returnUrl != Url.Content("~/") && Url.IsLocalUrl(returnUrl))
+                {
+                    return LocalRedirect(returnUrl);
+                }
+
+                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+
+                if (user != null && await _signInManager.UserManager.IsInRoleAsync(user, UserRoles.Admin))
+                {
+                    return RedirectToAction("Dashboard", "Admin", new { area = "" });
+                }
+
+                if (user != null && await _signInManager.UserManager.IsInRoleAsync(user, UserRoles.Owner))
+                {
+                    return RedirectToAction("Dashboard", "Owner", new { area = "" });
+                }
+
+                return RedirectToAction("UserHome", "Home", new { area = "" });
             }
 
             if (result.IsLockedOut)
             {
                 _logger.LogWarning("User account locked out.");
                 ModelState.AddModelError(string.Empty, "تم قفل الحساب مؤقتاً.");
+                return Page();
+            }
+
+            if (result.IsNotAllowed)
+            {
+                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                if (user != null && !user.IsActive)
+                    ModelState.AddModelError(string.Empty, "هذا الحساب معطّل. يرجى التواصل مع الإدارة.");
+                else
+                    ModelState.AddModelError(string.Empty, "تسجيل الدخول غير مسموح به.");
                 return Page();
             }
 

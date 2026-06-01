@@ -1,0 +1,72 @@
+@model IEnumerable<ParkingReservation.Models.Vehicle>
+@{
+    ViewData["Title"] = "مركباتي";
+}
+
+<div class="customer-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">إدارة المركبات</div>
+            <h1 class="customer-title">مركباتي</h1>
+            <p class="customer-subtitle">أضف مركباتك لتسريع عملية الحجز.</p>
+        </div>
+        <a class="btn customer-card-btn" asp-action="Create">
+            <i class="bi bi-plus-circle"></i> إضافة مركبة
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <section class="customer-panel">
+        <div class="customer-panel-header">
+            <h2>قائمة المركبات (@Model.Count())</h2>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="customer-empty customer-empty-panel">
+                <div class="customer-empty-title">لا توجد مركبات مضافة بعد</div>
+                <p class="customer-empty-text">أضف مركبتك لتظهر كخيار عند الحجز.</p>
+                <a class="btn customer-card-btn" asp-action="Create">إضافة مركبة</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table customer-table">
+                    <thead>
+                        <tr>
+                            <th>رقم اللوحة</th>
+                            <th>الماركة</th>
+                            <th>الموديل</th>
+                            <th>اللون</th>
+                            <th class="text-end">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@v.PlateNumber</td>
+                                <td>@(v.Make ?? "-")</td>
+                                <td>@(v.Model ?? "-")</td>
+                                <td>@(v.Color ?? "-")</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@v.Id">تعديل</a>
+                                    <form asp-action="Delete" method="post" style="display:inline"
+                                          onsubmit="return confirm('حذف هذه المركبة؟')">
+                                        <input type="hidden" name="id" value="@v.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>

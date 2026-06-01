@@ -1,0 +1,38 @@
+@model ParkingReservation.Models.Vehicle
+@{
+    ViewData["Title"] = "تعديل المركبة";
+}
+
+<div class="customer-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">إدارة المركبات</div>
+            <h1 class="customer-title">تعديل المركبة</h1>
+        </div>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+    </div>
+
+    <section class="customer-panel">
+        <form method="post" class="p-3 row g-3">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+
+            <div class="col-md-6">
+                <label asp-for="PlateNumber" class="form-label">رقم اللوحة *</label>
+                <input asp-for="PlateNumber" class="form-control auth-input" />
+                <span asp-validation-for="PlateNumber" class="text-danger"></span>
+            </div>
+
+            <partial name="_VehicleFormFields" model="Model" />
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn customer-card-btn">حفظ التعديلات</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">إلغاء</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

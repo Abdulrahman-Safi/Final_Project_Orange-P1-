@@ -1,0 +1,118 @@
+@model IEnumerable<ParkingReservation.Models.Reservation>
+@{
+    ViewData["Title"] = "متابعة الحجوزات";
+    var selectedStatus = ViewBag.SelectedStatus == null ? (ParkingReservation.Models.ReservationStatus?)null : (ParkingReservation.Models.ReservationStatus)ViewBag.SelectedStatus;
+    int totalCount     = ViewBag.TotalCount;
+    int pendingCount   = ViewBag.PendingCount;
+    int confirmedCount = ViewBag.ConfirmedCount;
+    int completedCount = ViewBag.CompletedCount;
+    int cancelledCount = ViewBag.CancelledCount;
+}
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-title">لوحة الإدارة</div>
+        <a asp-action="Dashboard"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+        <a asp-action="Users"><i class="bi bi-people"></i> إدارة المستخدمين</a>
+        <a asp-action="ApproveParkingLots"><i class="bi bi-p-square"></i> اعتماد المصفات</a>
+        <a class="active" asp-action="Reservations"><i class="bi bi-calendar2-check"></i> متابعة الحجوزات</a>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-header">
+            <div>
+                <span>الحجوزات</span>
+                <h1>متابعة الحجوزات</h1>
+                <p>عرض جميع الحجوزات في النظام مع إمكانية الفلترة حسب الحالة.</p>
+            </div>
+        </div>
+
+        <div class="admin-kpi-grid" style="margin-bottom:1.5rem">
+            <a class="admin-kpi @(selectedStatus == null ? "active" : "")"
+               asp-action="Reservations" style="text-decoration:none;cursor:pointer">
+                <span>الكل</span><strong>@totalCount</strong>
+            </a>
+            <a class="admin-kpi @(selectedStatus == ReservationStatus.Pending ? "active warning" : "warning")"
+               asp-action="Reservations" asp-route-status="@((int)ReservationStatus.Pending)" style="text-decoration:none;cursor:pointer">
+                <span>قيد الانتظار</span><strong>@pendingCount</strong>
+            </a>
+            <a class="admin-kpi @(selectedStatus == ReservationStatus.Confirmed ? "active" : "")"
+               asp-action="Reservations" asp-route-status="@((int)ReservationStatus.Confirmed)" style="text-decoration:none;cursor:pointer">
+                <span>مؤكدة</span><strong>@confirmedCount</strong>
+            </a>
+            <a class="admin-kpi @(selectedStatus == ReservationStatus.Completed ? "active" : "")"
+               asp-action="Reservations" asp-route-status="@((int)ReservationStatus.Completed)" style="text-decoration:none;cursor:pointer">
+                <span>مكتملة</span><strong>@completedCount</strong>
+            </a>
+            <a class="admin-kpi @(selectedStatus == ReservationStatus.Cancelled ? "active" : "")"
+               asp-action="Reservations" asp-route-status="@((int)ReservationStatus.Cancelled)" style="text-decoration:none;cursor:pointer">
+                <span>ملغاة</span><strong>@cancelledCount</strong>
+            </a>
+        </div>
+
+        <section class="admin-card admin-wide">
+            @if (!Model.Any())
+            {
+                <div class="customer-empty customer-empty-panel">
+                    <div class="customer-empty-title">لا توجد حجوزات</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-dashboard">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>المستخدم</th>
+                                <th>المصف</th>
+                                <th>الموقف</th>
+                                <th>البداية</th>
+                                <th>النهاية</th>
+                                <th>السعر</th>
+                                <th>الحالة</th>
+                                <th>صاحب المصف</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model)
+                            {
+                                <tr>
+                                    <td>@r.Id</td>
+                                    <td>@r.User?.FullName<br /><small class="text-muted">@r.User?.Email</small></td>
+                                    <td>@r.ParkingSpot?.ParkingLot?.Name</td>
+                                    <td>@r.ParkingSpot?.SpotNumber</td>
+                                    <td>@r.StartTime.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@r.EndTime.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@r.TotalPrice.ToString("0.00")</td>
+                                    <td><span class="status-pill @GetStatusClass(r.Status)">@GetStatusName(r.Status)</span></td>
+                                    <td>@(r.ParkingSpot?.ParkingLot?.Owner?.FullName ?? "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </main>
+</div>
+
+@functions {
+    private static string GetStatusClass(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Pending => "status-pending",
+        ReservationStatus.Confirmed => "status-approved",
+        ReservationStatus.Cancelled => "status-rejected",
+        ReservationStatus.Completed => "status-suspended",
+        _ => ""
+    };
+
+    private static string GetStatusName(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Pending => "قيد الانتظار",
+        ReservationStatus.Confirmed => "مؤكد",
+        ReservationStatus.Cancelled => "ملغي",
+        ReservationStatus.Completed => "مكتمل",
+        _ => status.ToString()
+    };
+}

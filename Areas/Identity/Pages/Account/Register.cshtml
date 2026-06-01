@@ -6,65 +6,162 @@
 
 <div class="auth-shell">
     <section class="auth-card">
-        <div class="auth-copy">
-            <div class="auth-kicker">ابدأ الآن</div>
-            <h1>أنشئ حسابك في منصة حجز المواقف</h1>
-            <p>اختر نوع الحساب المناسب لك. المستخدم يحجز المواقف، وصاحب المصف يدير المصفات والمواقف الخاصة به.</p>
+
+        <!-- ══ Visual / Image Panel ══ -->
+        <div class="auth-visual">
+            <div class="auth-visual-brand">
+                <span class="site-brand-mark">م</span>
+                <span>حجز المواقف</span>
+            </div>
+
+            <div class="auth-visual-body">
+                <div class="auth-visual-location">
+                    <i class="bi bi-geo-alt-fill"></i> عمّان، الأردن
+                </div>
+                <h2 class="auth-visual-title">ابدأ رحلتك<br>معنا اليوم</h2>
+                <p class="auth-visual-sub">
+                    انضم إلى آلاف المستخدمين الذين يوفّرون وقتهم يومياً
+                    بحجز مواقف سياراتهم مسبقاً في عمّان.
+                </p>
+                <div class="auth-visual-roles">
+                    <div class="auth-role-card">
+                        <i class="bi bi-person-fill"></i>
+                        <div>
+                            <div class="auth-role-name">مستخدم</div>
+                            <div class="auth-role-desc">تصفح وحجز المواقف</div>
+                        </div>
+                    </div>
+                    <div class="auth-role-card">
+                        <i class="bi bi-building"></i>
+                        <div>
+                            <div class="auth-role-name">صاحب مصف</div>
+                            <div class="auth-role-desc">أدر مصفاتك وإيراداتك</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-visual-footer">
+                <i class="bi bi-p-square-fill me-1"></i>
+                التسجيل مجاني — لا يلزم بطاقة ائتمان
+            </div>
         </div>
 
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="auth-form">
-            <h2>إنشاء حساب</h2>
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+        <!-- ══ Register Form (logic/validation unchanged) ══ -->
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl"
+              method="post" class="auth-form">
+
+            <div class="auth-form-header">
+                <div class="auth-form-avatar">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <h2>إنشاء حساب جديد</h2>
+                <p class="auth-form-tagline">أكمل البيانات التالية للتسجيل</p>
+            </div>
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
 
             <div class="mb-3">
-                <label asp-for="Input.FullName" class="form-label">الاسم الكامل</label>
-                <input asp-for="Input.FullName" class="form-control auth-input" autocomplete="name" aria-required="true" placeholder="مثال: أحمد محمد" />
-                <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                <label asp-for="Input.FullName" class="form-label auth-label">
+                    <i class="bi bi-person me-1"></i>الاسم الكامل
+                </label>
+                <input asp-for="Input.FullName" class="form-control auth-input"
+                       autocomplete="name" aria-required="true"
+                       placeholder="مثال: أحمد محمد" />
+                <span asp-validation-for="Input.FullName" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.Email" class="form-label">البريد الإلكتروني</label>
-                <input asp-for="Input.Email" class="form-control auth-input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                <label asp-for="Input.Email" class="form-label auth-label">
+                    <i class="bi bi-envelope me-1"></i>البريد الإلكتروني
+                </label>
+                <input asp-for="Input.Email" class="form-control auth-input"
+                       autocomplete="username" aria-required="true"
+                       placeholder="name@example.com" />
+                <span asp-validation-for="Input.Email" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.PhoneNumber" class="form-label">رقم الهاتف</label>
-                <input asp-for="Input.PhoneNumber" class="form-control auth-input" autocomplete="tel" placeholder="07xxxxxxxx" />
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <label asp-for="Input.PhoneNumber" class="form-label auth-label">
+                    <i class="bi bi-telephone me-1"></i>رقم الهاتف
+                </label>
+                <input asp-for="Input.PhoneNumber" class="form-control auth-input"
+                       autocomplete="tel" placeholder="07xxxxxxxx" />
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.Role" class="form-label">نوع الحساب</label>
+                <label asp-for="Input.Role" class="form-label auth-label">
+                    <i class="bi bi-person-badge me-1"></i>نوع الحساب
+                </label>
                 <select asp-for="Input.Role" class="form-select auth-input" aria-required="true">
-                    <option value="@UserRoles.User">مستخدم</option>
-                    <option value="@UserRoles.Owner">صاحب مصف</option>
+                    <option value="@UserRoles.User">مستخدم — أحجز المواقف</option>
+                    <option value="@UserRoles.Owner">صاحب مصف — أدير مصفاتي</option>
                 </select>
-                <span asp-validation-for="Input.Role" class="text-danger"></span>
+                <span asp-validation-for="Input.Role" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Input.Password" class="form-label">كلمة المرور</label>
-                <input asp-for="Input.Password" class="form-control auth-input" autocomplete="new-password" aria-required="true" placeholder="••••••••" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <label asp-for="Input.Password" class="form-label auth-label">
+                    <i class="bi bi-lock me-1"></i>كلمة المرور
+                </label>
+                <div class="auth-pw-wrap">
+                    <input asp-for="Input.Password" id="regPassword"
+                           class="form-control auth-input auth-pw-input"
+                           autocomplete="new-password" aria-required="true"
+                           placeholder="••••••••" />
+                    <button type="button" class="auth-pw-toggle" tabindex="-1"
+                            onclick="togglePw('regPassword',this)" aria-label="إظهار/إخفاء كلمة المرور">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Input.Password" class="text-danger small"></span>
             </div>
 
             <div class="mb-4">
-                <label asp-for="Input.ConfirmPassword" class="form-label">تأكيد كلمة المرور</label>
-                <input asp-for="Input.ConfirmPassword" class="form-control auth-input" autocomplete="new-password" aria-required="true" placeholder="••••••••" />
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                <label asp-for="Input.ConfirmPassword" class="form-label auth-label">
+                    <i class="bi bi-lock-fill me-1"></i>تأكيد كلمة المرور
+                </label>
+                <div class="auth-pw-wrap">
+                    <input asp-for="Input.ConfirmPassword" id="regConfirmPassword"
+                           class="form-control auth-input auth-pw-input"
+                           autocomplete="new-password" aria-required="true"
+                           placeholder="••••••••" />
+                    <button type="button" class="auth-pw-toggle" tabindex="-1"
+                            onclick="togglePw('regConfirmPassword',this)" aria-label="إظهار/إخفاء كلمة المرور">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
             </div>
 
-            <button id="registerSubmit" type="submit" class="btn auth-submit">إنشاء الحساب</button>
+            <button id="registerSubmit" type="submit" class="btn auth-submit">
+                <i class="bi bi-person-check-fill me-1"></i>
+                إنشاء الحساب
+            </button>
 
             <p class="auth-switch">
-                لديك حساب؟
-                <a asp-area="Identity" asp-page="/Account/Login">سجل الدخول</a>
+                لديك حساب بالفعل؟
+                <a asp-area="Identity" asp-page="/Account/Login">سجّل الدخول</a>
             </p>
         </form>
+
     </section>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+    function togglePw(inputId, btn) {
+        var input = document.getElementById(inputId);
+        var icon  = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
+    }
+    </script>
 }

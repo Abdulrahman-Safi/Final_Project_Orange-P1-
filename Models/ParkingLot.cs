@@ -18,6 +18,10 @@ namespace ParkingReservation.Models
         [StringLength(100)]
         public string City { get; set; } = string.Empty;
 
+        /// <summary>Amman neighborhood / district (e.g. "شميساني", "الصويفية").</summary>
+        [StringLength(100)]
+        public string? Area { get; set; }
+
         [Required]
         [StringLength(250)]
         public string Address { get; set; } = string.Empty;

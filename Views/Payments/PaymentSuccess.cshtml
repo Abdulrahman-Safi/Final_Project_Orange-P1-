@@ -1,0 +1,128 @@
+@{
+    ViewData["Title"] = "تمت عملية الدفع";
+    string transactionId = ViewBag.TransactionId;
+    decimal amount       = ViewBag.Amount;
+    string paidAt        = ViewBag.PaidAt;
+    ParkingReservation.Models.PaymentMethod method = ViewBag.Method;
+
+    string methodName = method switch {
+        ParkingReservation.Models.PaymentMethod.CreditCard => "بطاقة ائتمان",
+        ParkingReservation.Models.PaymentMethod.PayPal     => "PayPal",
+        ParkingReservation.Models.PaymentMethod.Wallet     => "المحفظة الإلكترونية",
+        _ => method.ToString()
+    };
+    string methodIcon = method switch {
+        ParkingReservation.Models.PaymentMethod.CreditCard => "bi-credit-card-2-front",
+        ParkingReservation.Models.PaymentMethod.PayPal     => "bi-paypal",
+        ParkingReservation.Models.PaymentMethod.Wallet     => "bi-wallet2",
+        _ => "bi-cash"
+    };
+}
+
+<div class="customer-shell" style="max-width:520px;margin:3rem auto">
+
+    <div class="pay-success-icon">
+        <i class="bi bi-check-circle-fill"></i>
+    </div>
+
+    <h1 class="pay-success-title">تمت عملية الدفع بنجاح!</h1>
+    <p class="pay-success-sub">شكراً لك، تم تأكيد حجزك ودفع المبلغ بنجاح.</p>
+
+    <div class="pay-receipt">
+        <div class="pay-receipt-header">
+            <i class="bi bi-receipt me-1"></i> إيصال الدفع
+        </div>
+
+        <div class="pay-receipt-row">
+            <span>رقم المعاملة</span>
+            <strong class="pay-receipt-txid">@transactionId</strong>
+        </div>
+        <div class="pay-receipt-row">
+            <span>المبلغ المدفوع</span>
+            <strong style="color:var(--bs-success)">@amount.ToString("0.00") د.أ</strong>
+        </div>
+        <div class="pay-receipt-row">
+            <span>طريقة الدفع</span>
+            <strong><i class="bi @methodIcon me-1"></i>@methodName</strong>
+        </div>
+        <div class="pay-receipt-row">
+            <span>تاريخ ووقت الدفع</span>
+            <strong>@paidAt</strong>
+        </div>
+        <div class="pay-receipt-row pay-receipt-status">
+            <span>الحالة</span>
+            <span class="status-pill status-approved"><i class="bi bi-check-lg me-1"></i>مدفوع</span>
+        </div>
+    </div>
+
+    <div class="pay-sim-note" style="margin-bottom:1.5rem">
+        <i class="bi bi-info-circle me-1"></i>
+        هذه محاكاة للدفع — لم يتم خصم أي مبلغ حقيقي.
+    </div>
+
+    <div class="d-flex gap-2 justify-content-center">
+        <a class="btn customer-card-btn" asp-controller="Reservations" asp-action="MyReservations">
+            <i class="bi bi-list-check me-1"></i> حجوزاتي
+        </a>
+        <a class="btn btn-outline-secondary" asp-controller="ParkingLots" asp-action="Index">
+            <i class="bi bi-search me-1"></i> تصفح المصفات
+        </a>
+    </div>
+</div>
+
+<style>
+    .pay-success-icon {
+        text-align: center;
+        font-size: 4rem;
+        color: var(--bs-success);
+        margin-bottom: 1rem;
+        animation: popIn .4s ease;
+    }
+    @@keyframes popIn {
+        from { transform: scale(0); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+    }
+    .pay-success-title {
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: .4rem;
+    }
+    .pay-success-sub {
+        text-align: center;
+        color: var(--bs-secondary-color);
+        margin-bottom: 1.75rem;
+    }
+    .pay-receipt {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+    }
+    .pay-receipt-header {
+        background: var(--bs-secondary-bg);
+        padding: .75rem 1.25rem;
+        font-weight: 600;
+        font-size: .9rem;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+    .pay-receipt-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .75rem 1.25rem;
+        border-bottom: 1px solid var(--bs-border-color);
+        font-size: .9rem;
+    }
+    .pay-receipt-row:last-child { border-bottom: none; }
+    .pay-receipt-row span:first-child { color: var(--bs-secondary-color); }
+    .pay-receipt-txid { font-family: monospace; letter-spacing: .05em; }
+    .pay-receipt-status strong, .pay-receipt-status span:last-child { font-size: .88rem; }
+    .pay-sim-note {
+        font-size: .8rem;
+        color: var(--bs-secondary-color);
+        background: var(--bs-info-bg-subtle);
+        border-radius: 8px;
+        padding: .6rem .85rem;
+    }
+</style>

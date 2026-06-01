@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - حجز المواقف</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ParkingReservation.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header class="site-header">
@@ -17,30 +19,63 @@
                     <span>حجز المواقف</span>
                 </a>
                 <button class="navbar-toggler site-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                        aria-expanded="false" aria-label="فتح وإغلاق القائمة">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse">
                     <ul class="navbar-nav site-nav-links mx-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">الرئيسية</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="ParkingLots" asp-action="Index">المصفات</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">الخصوصية</a>
-                        </li>
-                        @if (User.IsInRole(UserRoles.Owner) || User.IsInRole(UserRoles.Admin))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Owner" asp-action="Dashboard">لوحة المالك</a>
-                            </li>
-                        }
                         @if (User.IsInRole(UserRoles.Admin))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Dashboard">لوحة الأدمن</a>
+                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Dashboard">لوحة التحكم</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Users">المستخدمون</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="ApproveParkingLots">المصفات</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Reservations">الحجوزات</a>
+                            </li>
+                        }
+                        else if (User.IsInRole(UserRoles.Owner))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Owner" asp-action="Dashboard">لوحة التحكم</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Owner" asp-action="ManageParkingLots">المصفات</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Owner" asp-action="Reservations">الحجوزات</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Owner" asp-action="Revenue">الإيرادات</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">الرئيسية</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="ParkingLots" asp-action="Index">المصفات</a>
+                            </li>
+                            @if (User.Identity?.IsAuthenticated ?? false)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Reservations" asp-action="MyReservations">حجوزاتي</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Vehicles" asp-action="Index">مركباتي</a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">من نحن</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">تواصل معنا</a>
                             </li>
                         }
                     </ul>
@@ -49,15 +84,81 @@
             </div>
         </nav>
     </header>
-    <div class="container page-container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    @if (ViewData["FullWidth"] is true)
+    {
+        @RenderBody()
+    }
+    else
+    {
+        <div class="container page-container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
 
-    <footer class="border-top footer text-muted">
+    <footer class="site-footer">
         <div class="container">
-            &copy; 2026 - حجز المواقف - <a asp-area="" asp-controller="Home" asp-action="Privacy">الخصوصية</a>
+            <div class="site-footer-grid">
+                <div>
+                    <div class="site-footer-brand">
+                        <span class="site-brand-mark">م</span>
+                        <strong>حجز المواقف</strong>
+                    </div>
+                    <p class="site-footer-desc">منصة ذكية تربط السائقين بأصحاب المصفات لحجز مواقف السيارات بسهولة وأمان.</p>
+                </div>
+                <div>
+                    <div class="site-footer-heading">روابط سريعة</div>
+                    <ul class="site-footer-links">
+                        <li><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                        <li><a asp-controller="ParkingLots" asp-action="Index">تصفح المصفات</a></li>
+                        <li><a asp-controller="Home" asp-action="About">من نحن</a></li>
+                        <li><a asp-controller="Home" asp-action="Contact">تواصل معنا</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div>
+                    @if (User.IsInRole(UserRoles.Admin))
+                    {
+                        <div class="site-footer-heading">الإدارة</div>
+                        <ul class="site-footer-links">
+                            <li><a asp-controller="Admin" asp-action="Dashboard">لوحة التحكم</a></li>
+                            <li><a asp-controller="Admin" asp-action="Users">إدارة المستخدمين</a></li>
+                            <li><a asp-controller="Admin" asp-action="Reservations">الحجوزات</a></li>
+                        </ul>
+                    }
+                    else if (User.IsInRole(UserRoles.Owner))
+                    {
+                        <div class="site-footer-heading">لوحة المالك</div>
+                        <ul class="site-footer-links">
+                            <li><a asp-controller="Owner" asp-action="Dashboard">لوحة التحكم</a></li>
+                            <li><a asp-controller="Owner" asp-action="ManageParkingLots">مصفاتي</a></li>
+                            <li><a asp-controller="Owner" asp-action="Reservations">الحجوزات</a></li>
+                            <li><a asp-controller="Owner" asp-action="Revenue">الإيرادات</a></li>
+                        </ul>
+                    }
+                    else if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <div class="site-footer-heading">حسابي</div>
+                        <ul class="site-footer-links">
+                            <li><a asp-controller="Reservations" asp-action="MyReservations">حجوزاتي</a></li>
+                            <li><a asp-controller="Vehicles" asp-action="Index">مركباتي</a></li>
+                            <li><a asp-controller="Profile" asp-action="Index">الملف الشخصي</a></li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="site-footer-heading">ابدأ الآن</div>
+                        <ul class="site-footer-links">
+                            <li><a asp-area="Identity" asp-page="/Account/Register">إنشاء حساب</a></li>
+                            <li><a asp-area="Identity" asp-page="/Account/Login">تسجيل الدخول</a></li>
+                        </ul>
+                    }
+                </div>
+            </div>
+            <div class="site-footer-bottom">
+                <span>&copy; @DateTime.Now.Year - منصة حجز المواقف. جميع الحقوق محفوظة.</span>
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

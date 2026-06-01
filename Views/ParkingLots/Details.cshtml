@@ -1,89 +1,270 @@
 @model ParkingLot
 @{
     ViewData["Title"] = Model.Name;
+    var startTime = ViewBag.StartTime as string;
+    var endTime = ViewBag.EndTime as string;
+    var hasValidPeriod = ViewBag.HasValidPeriod as bool? ?? false;
     var availableSpots = Model.ParkingSpots
         .Where(spot => spot.IsActive && spot.Status == ParkingSpotStatus.Available)
         .OrderBy(spot => spot.SpotNumber)
         .ToList();
+    var reviews = Model.Reviews.OrderByDescending(r => r.CreatedAt).ToList();
+    var avgRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var userReview = reviews.FirstOrDefault(r => r.UserId == currentUserId);
 }
 
-<div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-    <div>
-        <h1 class="h3 mb-1">@Model.Name</h1>
-        <p class="text-muted mb-0">@Model.Address, @Model.City</p>
-    </div>
-    <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="border rounded p-3 h-100 bg-white">
-            <div class="text-muted">Hourly rate</div>
-            <div class="fs-4 fw-semibold">@Model.HourlyRate.ToString("0.00")</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="border rounded p-3 h-100 bg-white">
-            <div class="text-muted">Working hours</div>
-            <div class="fs-5 fw-semibold">
-                @Model.OpeningTime.ToString(@"hh\:mm") - @Model.ClosingTime.ToString(@"hh\:mm")
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="border rounded p-3 h-100 bg-white">
-            <div class="text-muted">Available spots</div>
-            <div class="fs-4 fw-semibold">@availableSpots.Count</div>
-        </div>
-    </div>
-</div>
-
-@if (!string.IsNullOrWhiteSpace(Model.Description))
-{
-    <div class="border rounded p-3 bg-white mb-4">
-        <h2 class="h5">Description</h2>
-        <p class="mb-0">@Model.Description</p>
-    </div>
-}
-
-<div class="border rounded bg-white">
-    <div class="p-3 border-bottom">
-        <h2 class="h5 mb-0">Available spots</h2>
-    </div>
-
-    @if (!availableSpots.Any())
-    {
-        <div class="p-4 text-center">
-            <div class="fw-semibold mb-1">No spots available now</div>
-            <p class="text-muted mb-0">Please check another parking lot or try again later.</p>
-        </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Spot number</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @foreach (var spot in availableSpots)
+<div class="customer-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">تفاصيل المصف</div>
+            <h1 class="customer-title">@Model.Name</h1>
+            <p class="customer-subtitle">
+                @Model.Address، @Model.City
+                @if (!string.IsNullOrEmpty(Model.Area))
                 {
-                    <tr>
-                        <td class="fw-semibold">@spot.SpotNumber</td>
-                        <td>@spot.SpotType</td>
-                        <td><span class="badge bg-success">@spot.Status</span></td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-primary" disabled>Reserve soon</button>
-                        </td>
-                    </tr>
+                    <span class="lot-area-badge me-2"><i class="bi bi-geo-alt-fill me-1"></i>@Model.Area</span>
                 }
-                </tbody>
-            </table>
+            </p>
         </div>
+        <a class="btn btn-outline-secondary"
+           asp-action="Index"
+           asp-route-startTime="@startTime"
+           asp-route-endTime="@endTime">الرجوع للمصفات</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
     }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <form method="get" class="customer-filter">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div>
+            <label class="form-label">من</label>
+            <input type="datetime-local" name="startTime" value="@startTime" class="form-control auth-input" />
+        </div>
+        <div>
+            <label class="form-label">إلى</label>
+            <input type="datetime-local" name="endTime" value="@endTime" class="form-control auth-input" />
+        </div>
+        <div class="customer-filter-actions">
+            <button type="submit" class="btn primary-btn">تحديث التوفر</button>
+        </div>
+    </form>
+
+    <div class="customer-summary-grid">
+        <div class="customer-summary-card">
+            <span>سعر الساعة</span>
+            <strong>@Model.HourlyRate.ToString("0.00")</strong>
+        </div>
+        <div class="customer-summary-card">
+            <span>ساعات العمل</span>
+            <strong>@Model.OpeningTime.ToString(@"hh\:mm") - @Model.ClosingTime.ToString(@"hh\:mm")</strong>
+        </div>
+        <div class="customer-summary-card">
+            <span>المواقف المتاحة</span>
+            <strong>@availableSpots.Count</strong>
+        </div>
+        <div class="customer-summary-card">
+            <span>التقييم</span>
+            <strong>@(reviews.Any() ? avgRating.ToString("0.0") + " ★" : "لا يوجد")</strong>
+        </div>
+    </div>
+
+    <!-- Location Map Section -->
+    <section class="customer-panel" style="overflow:hidden">
+        <div class="customer-panel-header">
+            <h2><i class="bi bi-geo-alt-fill text-danger me-2"></i>الموقع على الخريطة</h2>
+            @{
+                var mapsUrl = (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                    ? $"https://www.google.com/maps?q={Model.Latitude},{Model.Longitude}"
+                    : $"https://www.google.com/maps/search/{Uri.EscapeDataString(Model.Name + " " + Model.Address + " " + Model.City)}";
+            }
+            <a href="@mapsUrl" target="_blank" rel="noopener" class="btn btn-sm primary-btn">
+                <i class="bi bi-navigation-fill me-1"></i> الحصول على الاتجاهات
+            </a>
+        </div>
+        @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+        {
+            <div id="lotMap" style="height:320px;width:100%"></div>
+        }
+        else
+        {
+            <div style="padding:1.5rem;background:#f8fafc;text-align:center;color:#667085">
+                <i class="bi bi-geo-alt" style="font-size:2rem;display:block;margin-bottom:.5rem"></i>
+                <strong>@Model.Address، @Model.City</strong>
+                <p style="margin:.35rem 0 0">لم يتم تحديد الإحداثيات بعد. اضغط "الحصول على الاتجاهات" للبحث في خرائط جوجل.</p>
+            </div>
+        }
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Description))
+    {
+        <section class="customer-panel">
+            <div class="customer-panel-header">
+                <h2>وصف المصف</h2>
+            </div>
+            <p class="customer-description">@Model.Description</p>
+        </section>
+    }
+
+    <section class="customer-panel">
+        <div class="customer-panel-header">
+            <h2>المواقف المتاحة @(hasValidPeriod ? "خلال الفترة المحددة" : "")</h2>
+        </div>
+
+        @if (!availableSpots.Any())
+        {
+            <div class="customer-empty customer-empty-panel">
+                <div class="customer-empty-title">لا توجد مواقف متاحة الآن</div>
+                <p class="customer-empty-text">جرّب فترة زمنية أخرى أو تحقق لاحقاً من توفر المواقف.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table customer-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الموقف</th>
+                            <th>النوع</th>
+                            <th>الحالة</th>
+                            <th class="text-end">الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var spot in availableSpots)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@spot.SpotNumber</td>
+                            <td>@GetSpotTypeName(spot.SpotType)</td>
+                            <td><span class="customer-status">متاح</span></td>
+                            <td class="text-end">
+                                <a class="btn btn-sm primary-btn"
+                                   asp-controller="Reservations"
+                                   asp-action="Create"
+                                   asp-route-parkingSpotId="@spot.Id"
+                                   asp-route-startTime="@startTime"
+                                   asp-route-endTime="@endTime">احجز الآن</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="customer-panel">
+        <div class="customer-panel-header">
+            <h2>التقييمات (@reviews.Count)</h2>
+        </div>
+
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <div style="margin-bottom:1.5rem;padding:1rem;background:var(--bs-body-bg);border-radius:8px;border:1px solid var(--bs-border-color)">
+                <h3 style="font-size:1rem;margin-bottom:0.75rem">@(userReview != null ? "تعديل تقييمك" : "أضف تقييمك")</h3>
+                <form asp-controller="Reviews" asp-action="Submit" method="post">
+                    <input type="hidden" name="parkingLotId" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label class="form-label">التقييم</label>
+                        <div class="d-flex gap-2">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                var isChecked = userReview?.Rating == i;
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="rating" value="@i" id="star@(i)" checked="@isChecked" required />
+                                    <label class="form-check-label" for="star@(i)">@i ★</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تعليق (اختياري)</label>
+                        <textarea name="comment" class="form-control auth-input" rows="2" maxlength="500">@userReview?.Comment</textarea>
+                    </div>
+                    <button type="submit" class="btn customer-card-btn btn-sm">حفظ التقييم</button>
+                    @if (userReview != null)
+                    {
+                        <form asp-controller="Reviews" asp-action="Delete" method="post" style="display:inline;margin-right:0.5rem">
+                            <input type="hidden" name="id" value="@userReview.Id" />
+                            <input type="hidden" name="parkingLotId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('حذف تقييمك؟')">حذف</button>
+                        </form>
+                    }
+                </form>
+            </div>
+        }
+
+        @if (!reviews.Any())
+        {
+            <div class="customer-empty customer-empty-panel">
+                <div class="customer-empty-title">لا توجد تقييمات بعد</div>
+                <p class="customer-empty-text">كن أول من يقيّم هذا المصف بعد حجزك.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var review in reviews)
+            {
+                <div style="padding:0.75rem 0;border-bottom:1px solid var(--bs-border-color)">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>@review.User?.FullName</strong>
+                            <span style="color:var(--bs-warning);margin-right:0.5rem">
+                                @for (int i = 0; i < review.Rating; i++) { <text>★</text> }
+                                @for (int i = review.Rating; i < 5; i++) { <text>☆</text> }
+                            </span>
+                        </div>
+                        <small class="text-muted">@review.CreatedAt.ToString("yyyy/MM/dd")</small>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(review.Comment))
+                    {
+                        <p style="margin-top:0.25rem;margin-bottom:0;color:var(--bs-secondary-color)">@review.Comment</p>
+                    }
+                </div>
+            }
+        }
+    </section>
 </div>
+
+@section Scripts {
+@if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+{
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        (function() {
+            var lat = @Model.Latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var lng = @Model.Longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var map = L.map('lotMap').setView([lat, lng], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup('<strong>@Html.Raw(Model.Name)</strong><br>@Html.Raw(Model.Address)')
+                .openPopup();
+        })();
+    </script>
+}
+}
+
+@functions {
+    private static string GetSpotTypeName(ParkingSpotType type) => type switch
+    {
+        ParkingSpotType.Standard => "عادي",
+        ParkingSpotType.Disabled => "ذوي الإعاقة",
+        ParkingSpotType.Electric => "كهربائي",
+        ParkingSpotType.VIP => "VIP",
+        _ => type.ToString()
+    };
+}

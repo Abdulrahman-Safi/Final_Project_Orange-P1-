@@ -1,0 +1,58 @@
+@model ParkingReservation.Models.ViewModels.EditProfileViewModel
+@{
+    ViewData["Title"] = "تعديل الملف الشخصي";
+}
+
+<div class="profile-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">الملف الشخصي</div>
+            <h1 class="customer-title">تعديل البيانات الشخصية</h1>
+            <p class="customer-subtitle">حدّث معلوماتك الشخصية وجهة التواصل.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-right me-1"></i> رجوع
+        </a>
+    </div>
+
+    <div class="profile-form-card">
+        <form method="post" class="row g-4">
+            <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+
+            <div class="col-md-6">
+                <label asp-for="FullName" class="form-label fw-bold">
+                    <i class="bi bi-person me-1 text-muted"></i> الاسم الكامل *
+                </label>
+                <input asp-for="FullName" class="form-control auth-input" placeholder="مثال: محمد أحمد" />
+                <span asp-validation-for="FullName" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="PhoneNumber" class="form-label fw-bold">
+                    <i class="bi bi-telephone me-1 text-muted"></i> رقم الهاتف
+                </label>
+                <input asp-for="PhoneNumber" class="form-control auth-input" placeholder="05xxxxxxxx" />
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Address" class="form-label fw-bold">
+                    <i class="bi bi-geo-alt me-1 text-muted"></i> العنوان
+                </label>
+                <input asp-for="Address" class="form-control auth-input" placeholder="المدينة، الحي، الشارع" />
+                <span asp-validation-for="Address" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn primary-btn">
+                    <i class="bi bi-check-lg me-1"></i> حفظ التعديلات
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

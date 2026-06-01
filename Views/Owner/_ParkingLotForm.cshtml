@@ -1,65 +1,185 @@
 @model ParkingReservation.Models.ViewModels.ParkingLotFormViewModel
+@{
+    var ammanAreas = ViewBag.AmmanAreas as IReadOnlyList<string> ?? ParkingReservation.Models.AmmanAreas.All;
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <div class="owner-shell">
     <div class="owner-form-panel">
         <form method="post" class="row g-3">
             <input asp-for="Id" type="hidden" />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
 
             <div class="col-md-6">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label asp-for="Name" class="form-label fw-bold">اسم المصف *</label>
+                <input asp-for="Name" class="form-control auth-input" placeholder="مثال: مصف الشميساني" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
             </div>
 
             <div class="col-md-6">
-                <label asp-for="City" class="form-label"></label>
-                <input asp-for="City" class="form-control" />
-                <span asp-validation-for="City" class="text-danger"></span>
+                <label asp-for="City" class="form-label fw-bold">المدينة *</label>
+                <input asp-for="City" class="form-control auth-input" placeholder="مثال: عمّان" />
+                <span asp-validation-for="City" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Area" class="form-label fw-bold">
+                    <i class="bi bi-geo-alt-fill text-primary me-1"></i>المنطقة / الحي
+                </label>
+                <select asp-for="Area" class="form-select auth-input">
+                    <option value="">-- اختر المنطقة --</option>
+                    @foreach (var a in ammanAreas)
+                    {
+                        <option value="@a" selected="@(Model.Area == a ? "selected" : null)">@a</option>
+                    }
+                </select>
+                <span asp-validation-for="Area" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Address" class="form-label fw-bold">العنوان التفصيلي *</label>
+                <input asp-for="Address" class="form-control auth-input" placeholder="مثال: شارع الملك الحسين، بجانب دوار الداخلية" />
+                <span asp-validation-for="Address" class="text-danger small"></span>
             </div>
 
             <div class="col-12">
-                <label asp-for="Address" class="form-label"></label>
-                <input asp-for="Address" class="form-control" />
-                <span asp-validation-for="Address" class="text-danger"></span>
+                <label asp-for="Description" class="form-label fw-bold">الوصف</label>
+                <textarea asp-for="Description" class="form-control auth-input" rows="2" placeholder="وصف مختصر للمصف وميزاته..."></textarea>
             </div>
 
-            <div class="col-12">
-                <label asp-for="Description" class="form-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
+            <div class="col-md-4">
+                <label asp-for="OpeningTime" class="form-label fw-bold">وقت الفتح *</label>
+                <input asp-for="OpeningTime" class="form-control auth-input" type="time" />
+                <span asp-validation-for="OpeningTime" class="text-danger small"></span>
             </div>
 
-            <div class="col-md-3">
-                <label asp-for="OpeningTime" class="form-label"></label>
-                <input asp-for="OpeningTime" class="form-control" type="time" />
-                <span asp-validation-for="OpeningTime" class="text-danger"></span>
+            <div class="col-md-4">
+                <label asp-for="ClosingTime" class="form-label fw-bold">وقت الإغلاق *</label>
+                <input asp-for="ClosingTime" class="form-control auth-input" type="time" />
+                <span asp-validation-for="ClosingTime" class="text-danger small"></span>
             </div>
 
-            <div class="col-md-3">
-                <label asp-for="ClosingTime" class="form-label"></label>
-                <input asp-for="ClosingTime" class="form-control" type="time" />
-                <span asp-validation-for="ClosingTime" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-3">
-                <label asp-for="HourlyRate" class="form-label"></label>
-                <input asp-for="HourlyRate" class="form-control" />
-                <span asp-validation-for="HourlyRate" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">Coordinates</label>
+            <div class="col-md-4">
+                <label asp-for="HourlyRate" class="form-label fw-bold">سعر الساعة *</label>
                 <div class="input-group">
-                    <input asp-for="Latitude" class="form-control" placeholder="Lat" />
-                    <input asp-for="Longitude" class="form-control" placeholder="Lng" />
+                    <input asp-for="HourlyRate" class="form-control auth-input" placeholder="0.00" />
+                    <span class="input-group-text">د.أ</span>
+                </div>
+                <span asp-validation-for="HourlyRate" class="text-danger small"></span>
+            </div>
+
+            <!-- Map picker -->
+            <div class="col-12">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                    موقع المصف على الخريطة *
+                </label>
+                <div class="map-picker-hint">
+                    <i class="bi bi-cursor-fill me-1"></i>
+                    انقر على الخريطة لتحديد موقع المصف. يمكنك البحث باسم المكان أو الشارع.
+                </div>
+                <div class="map-search-row">
+                    <input type="text" id="mapSearchInput" class="form-control auth-input"
+                           placeholder="ابحث عن موقع... مثال: شارع الملك الحسين، عمّان" />
+                    <button type="button" id="mapSearchBtn" class="btn primary-btn">
+                        <i class="bi bi-search"></i> بحث
+                    </button>
+                </div>
+                <div id="locationPickerMap" style="height:380px;border-radius:10px;border:2px solid #dce4ee;margin-top:.5rem"></div>
+                <div class="map-coords-row">
+                    <div class="flex-fill">
+                        <label class="form-label small fw-bold mb-1">خط العرض (Latitude)</label>
+                        <input asp-for="Latitude" id="latInput" class="form-control auth-input form-control-sm"
+                               placeholder="سيتم ملؤه تلقائياً بالنقر على الخريطة" readonly />
+                        <span asp-validation-for="Latitude" class="text-danger small"></span>
+                    </div>
+                    <div class="flex-fill">
+                        <label class="form-label small fw-bold mb-1">خط الطول (Longitude)</label>
+                        <input asp-for="Longitude" id="lngInput" class="form-control auth-input form-control-sm"
+                               placeholder="سيتم ملؤه تلقائياً بالنقر على الخريطة" readonly />
+                        <span asp-validation-for="Longitude" class="text-danger small"></span>
+                    </div>
+                    <div class="align-self-end">
+                        <button type="button" id="clearLocationBtn" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-x-circle me-1"></i> مسح
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 d-flex gap-2">
-                <button type="submit" class="btn owner-primary-btn">Save</button>
-                <a class="btn btn-outline-secondary" asp-action="Dashboard">Cancel</a>
+            <div class="col-12 d-flex gap-2 mt-1">
+                <button type="submit" class="btn primary-btn">
+                    <i class="bi bi-check-lg me-1"></i> حفظ
+                </button>
+                <a class="btn btn-outline-secondary" asp-action="Dashboard">إلغاء</a>
             </div>
         </form>
     </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+    var existingLat = @(Model.Latitude.HasValue ? Model.Latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "null");
+    var existingLng = @(Model.Longitude.HasValue ? Model.Longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "null");
+
+    var map = L.map('locationPickerMap').setView(
+        [existingLat ?? 24.7136, existingLng ?? 46.6753],
+        existingLat ? 15 : 6
+    );
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors', maxZoom: 19
+    }).addTo(map);
+
+    var marker = null;
+
+    function placeMarker(lat, lng) {
+        lat = parseFloat(parseFloat(lat).toFixed(6));
+        lng = parseFloat(parseFloat(lng).toFixed(6));
+        if (marker) { marker.setLatLng([lat, lng]); }
+        else {
+            marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+            marker.on('dragend', function (e) {
+                var p = e.target.getLatLng();
+                setCoords(p.lat, p.lng);
+            });
+        }
+        setCoords(lat, lng);
+        map.setView([lat, lng], Math.max(map.getZoom(), 15));
+    }
+
+    function setCoords(lat, lng) {
+        document.getElementById('latInput').value = lat;
+        document.getElementById('lngInput').value = lng;
+    }
+
+    if (existingLat && existingLng) placeMarker(existingLat, existingLng);
+
+    map.on('click', function (e) { placeMarker(e.latlng.lat, e.latlng.lng); });
+
+    document.getElementById('mapSearchBtn').addEventListener('click', function () {
+        var q = document.getElementById('mapSearchInput').value.trim();
+        if (!q) return;
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q) + '&limit=1', {
+            headers: { 'Accept-Language': 'ar' }
+        })
+        .then(r => r.json())
+        .then(function(data) {
+            if (data && data.length > 0) placeMarker(parseFloat(data[0].lat), parseFloat(data[0].lon));
+            else alert('لم يتم العثور على الموقع. جرب كلمات مختلفة.');
+        });
+    });
+
+    document.getElementById('mapSearchInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('mapSearchBtn').click(); }
+    });
+
+    document.getElementById('clearLocationBtn').addEventListener('click', function () {
+        if (marker) { map.removeLayer(marker); marker = null; }
+        document.getElementById('latInput').value = '';
+        document.getElementById('lngInput').value = '';
+    });
+})();
+</script>

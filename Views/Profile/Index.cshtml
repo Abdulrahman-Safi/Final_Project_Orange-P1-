@@ -1,0 +1,126 @@
+@model ParkingReservation.Models.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "ملفي الشخصي";
+    var roleLabel = Model.Role switch {
+        "Admin" => "مدير النظام",
+        "Owner" => "صاحب مصف",
+        _       => "مستخدم"
+    };
+    var roleIcon = Model.Role switch {
+        "Admin" => "bi-shield-fill-check",
+        "Owner" => "bi-building",
+        _       => "bi-person-fill"
+    };
+    var roleColor = Model.Role switch {
+        "Admin" => "#d97706",
+        "Owner" => "#6366f1",
+        _       => "#0f766e"
+    };
+}
+
+<div class="profile-shell">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- Profile hero -->
+    <div class="profile-hero">
+        <div class="profile-avatar">@Model.FullName[0].ToString().ToUpper()</div>
+        <div class="profile-hero-info">
+            <h1 class="profile-name">@Model.FullName</h1>
+            <p class="profile-email"><i class="bi bi-envelope me-1"></i>@Model.Email</p>
+            <div class="d-flex flex-wrap gap-2 mt-1">
+                <span class="profile-badge" style="background:@(roleColor)22;color:@roleColor;border:1px solid @(roleColor)44">
+                    <i class="bi @roleIcon me-1"></i>@roleLabel
+                </span>
+                <span class="profile-badge">
+                    <i class="bi bi-calendar3 me-1"></i>عضو منذ @Model.CreatedAt.ToString("yyyy/MM/dd")
+                </span>
+            </div>
+        </div>
+        <div class="profile-hero-actions">
+            <a asp-action="Edit" class="btn primary-btn btn-sm">
+                <i class="bi bi-pencil-fill me-1"></i> تعديل
+            </a>
+            <a asp-action="ChangePassword" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-lock me-1"></i> كلمة المرور
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="profile-stats">
+        <div class="profile-stat-card">
+            <i class="bi bi-calendar2-check profile-stat-icon" style="color:#0f766e"></i>
+            <strong>@Model.ReservationsCount</strong>
+            <span>إجمالي الحجوزات</span>
+        </div>
+        <div class="profile-stat-card">
+            <i class="bi bi-car-front profile-stat-icon" style="color:#6366f1"></i>
+            <strong>@Model.VehiclesCount</strong>
+            <span>المركبات المسجلة</span>
+        </div>
+        @if (Model.Role == "Owner")
+        {
+            <div class="profile-stat-card">
+                <i class="bi bi-p-square profile-stat-icon" style="color:#d97706"></i>
+                <strong>@Model.ParkingLotsCount</strong>
+                <span>مصفاتي</span>
+            </div>
+        }
+    </div>
+
+    <!-- Details — two columns only -->
+    <div class="profile-details-grid">
+        <div class="profile-info-card">
+            <div class="profile-info-header">
+                <h2><i class="bi bi-person me-2"></i>المعلومات الشخصية</h2>
+                <a asp-action="Edit" class="btn btn-sm btn-outline-secondary">تعديل</a>
+            </div>
+            <div class="profile-info-rows">
+                <div class="profile-info-row">
+                    <span>الاسم الكامل</span>
+                    <strong>@Model.FullName</strong>
+                </div>
+                <div class="profile-info-row">
+                    <span>البريد الإلكتروني</span>
+                    <strong>@Model.Email</strong>
+                </div>
+                <div class="profile-info-row">
+                    <span>رقم الهاتف</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.PhoneNumber) ? "—" : Model.PhoneNumber)</strong>
+                </div>
+                <div class="profile-info-row">
+                    <span>العنوان</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.Address) ? "—" : Model.Address)</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-info-card">
+            <div class="profile-info-header">
+                <h2><i class="bi bi-shield-lock me-2"></i>الأمان والحساب</h2>
+            </div>
+            <div class="profile-info-rows">
+                <div class="profile-info-row">
+                    <span>كلمة المرور</span>
+                    <a asp-action="ChangePassword" class="btn btn-sm primary-btn">
+                        <i class="bi bi-lock me-1"></i> تغيير
+                    </a>
+                </div>
+                <div class="profile-info-row">
+                    <span>نوع الحساب</span>
+                    <strong>@roleLabel</strong>
+                </div>
+                <div class="profile-info-row">
+                    <span>تاريخ التسجيل</span>
+                    <strong>@Model.CreatedAt.ToString("yyyy/MM/dd")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

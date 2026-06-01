@@ -1,53 +1,212 @@
 @model IEnumerable<ParkingLot>
 @{
-    ViewData["Title"] = "Parking Lots";
+    ViewData["Title"] = "المصفات";
+    var startTime       = ViewBag.StartTime as string;
+    var endTime         = ViewBag.EndTime as string;
+    var hasValidPeriod  = ViewBag.HasValidPeriod as bool? ?? false;
+    var selectedCity    = ViewBag.SelectedCity as string;
+    var selectedArea    = ViewBag.SelectedArea as string;
+    var cities          = ViewBag.Cities as List<string> ?? new List<string>();
+    var allAreas        = ViewBag.AllAreas as IReadOnlyList<string> ?? ParkingReservation.Models.AmmanAreas.All;
+    var areasWithLots   = ViewBag.AreasWithLots as HashSet<string> ?? new HashSet<string>();
 }
 
-<div class="mb-4">
-    <h1 class="h3 mb-1">Available parking lots</h1>
-    <p class="text-muted mb-0">Choose an approved parking lot and view its available spots.</p>
-</div>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        No approved parking lots are available yet.
+<div class="customer-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">المصفات المتاحة</div>
+            <h1 class="customer-title">اختر المصف المناسب لك</h1>
+            <p class="customer-subtitle">تصفح المصفات المعتمدة، فلتر حسب المنطقة، أو أدخل فترة زمنية لعرض المواقف المتاحة.</p>
+        </div>
     </div>
-}
-else
-{
-    <div class="row g-3">
-        @foreach (var parkingLot in Model)
+
+    <!-- Filter bar -->
+    <form method="get" class="lots-filter-bar">
+        <!-- Area dropdown (Amman neighborhoods) -->
+        <div class="lots-filter-group">
+            <label class="form-label"><i class="bi bi-geo-alt-fill text-primary me-1"></i>المنطقة / الحي</label>
+            <select name="area" class="form-select auth-input">
+                <option value="">كل المناطق</option>
+                @foreach (var a in allAreas)
+                {
+                    <option value="@a" selected="@(selectedArea == a ? "selected" : null)">
+                        @a@(areasWithLots.Contains(a) ? "" : "")
+                    </option>
+                }
+            </select>
+        </div>
+
+        @if (cities.Count > 1)
         {
-            var availableSpots = parkingLot.ParkingSpots.Count(spot =>
-                spot.IsActive && spot.Status == ParkingSpotStatus.Available);
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between gap-3">
-                            <div>
-                                <h2 class="h5 mb-1">@parkingLot.Name</h2>
-                                <div class="text-muted small">@parkingLot.City</div>
-                            </div>
-                            <span class="badge bg-success align-self-start">@availableSpots available</span>
-                        </div>
-
-                        <p class="mt-3 mb-2">@parkingLot.Address</p>
-                        <div class="text-muted small mb-3">
-                            @parkingLot.OpeningTime.ToString(@"hh\:mm") - @parkingLot.ClosingTime.ToString(@"hh\:mm")
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="fw-semibold">@parkingLot.HourlyRate.ToString("0.00")</span>
-                                <span class="text-muted">/ hour</span>
-                            </div>
-                            <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@parkingLot.Id">View spots</a>
-                        </div>
-                    </div>
-                </div>
+            <div class="lots-filter-group">
+                <label class="form-label">المدينة</label>
+                <select name="city" class="form-select auth-input">
+                    <option value="">كل المدن</option>
+                    @foreach (var c in cities)
+                    {
+                        <option value="@c" selected="@(selectedCity == c ? "selected" : null)">@c</option>
+                    }
+                </select>
             </div>
         }
-    </div>
-}
+        else
+        {
+            <input type="hidden" name="city" value="@selectedCity" />
+        }
+
+        <div class="lots-filter-group">
+            <label class="form-label">من</label>
+            <input type="datetime-local" name="startTime" value="@startTime" class="form-control auth-input" />
+        </div>
+        <div class="lots-filter-group">
+            <label class="form-label">إلى</label>
+            <input type="datetime-local" name="endTime" value="@endTime" class="form-control auth-input" />
+        </div>
+        <div class="lots-filter-actions">
+            <button type="submit" class="btn primary-btn">
+                <i class="bi bi-search me-1"></i> بحث
+            </button>
+            <a class="btn btn-outline-secondary" asp-action="Index">
+                <i class="bi bi-x-circle me-1"></i> إعادة تعيين
+            </a>
+        </div>
+    </form>
+
+    <!-- Area quick-filter chips -->
+    @if (areasWithLots.Any())
+    {
+        <div class="area-chips-bar">
+            <a class="area-chip @(string.IsNullOrEmpty(selectedArea) ? "active" : "")"
+               asp-action="Index"
+               asp-route-city="@selectedCity"
+               asp-route-startTime="@startTime"
+               asp-route-endTime="@endTime">
+                <i class="bi bi-grid-3x3-gap-fill"></i> الكل
+            </a>
+            @foreach (var a in allAreas.Where(x => areasWithLots.Contains(x)))
+            {
+                <a class="area-chip @(selectedArea == a ? "active" : "")"
+                   asp-action="Index"
+                   asp-route-area="@a"
+                   asp-route-city="@selectedCity"
+                   asp-route-startTime="@startTime"
+                   asp-route-endTime="@endTime">
+                    <i class="bi bi-geo-alt"></i> @a
+                </a>
+            }
+        </div>
+    }
+
+    <!-- Active filter indicators -->
+    @if (!string.IsNullOrEmpty(selectedArea) || !string.IsNullOrEmpty(selectedCity) || hasValidPeriod)
+    {
+        <div class="lots-active-filters">
+            <span>الفلاتر المفعّلة:</span>
+            @if (!string.IsNullOrEmpty(selectedArea))
+            {
+                <span class="lots-filter-badge">
+                    <i class="bi bi-geo-alt-fill me-1"></i>@selectedArea
+                    <a asp-action="Index"
+                       asp-route-city="@selectedCity"
+                       asp-route-startTime="@startTime"
+                       asp-route-endTime="@endTime">×</a>
+                </span>
+            }
+            @if (!string.IsNullOrEmpty(selectedCity))
+            {
+                <span class="lots-filter-badge">
+                    <i class="bi bi-building me-1"></i>@selectedCity
+                    <a asp-action="Index"
+                       asp-route-area="@selectedArea"
+                       asp-route-startTime="@startTime"
+                       asp-route-endTime="@endTime">×</a>
+                </span>
+            }
+            @if (hasValidPeriod)
+            {
+                <span class="lots-filter-badge">
+                    <i class="bi bi-clock me-1"></i>@startTime?.Replace("T", " ") – @endTime?.Replace("T", " ")
+                    <a asp-action="Index"
+                       asp-route-area="@selectedArea"
+                       asp-route-city="@selectedCity">×</a>
+                </span>
+            }
+        </div>
+    }
+
+    @if (!hasValidPeriod && string.IsNullOrEmpty(selectedArea) && string.IsNullOrEmpty(selectedCity))
+    {
+        <div class="filter-time-hint">
+            <i class="bi bi-info-circle-fill" style="font-size:1.1rem;flex-shrink:0"></i>
+            <span>اختر منطقة أو أدخل فترة الحجز لتضييق النتائج وعرض المواقف المتاحة في الوقت المحدد.</span>
+        </div>
+    }
+
+    @if (hasValidPeriod)
+    {
+        <div class="customer-filter-note">
+            <i class="bi bi-check-circle-fill me-1"></i>
+            تعرض المصفات التي تحتوي مواقف متاحة بين الوقتين المحددين فقط.
+        </div>
+    }
+
+    <!-- Results -->
+    @if (!Model.Any())
+    {
+        <div class="customer-empty">
+            <i class="bi bi-p-square" style="font-size:2.5rem;color:#cbd5e1;display:block;margin-bottom:.75rem"></i>
+            <div class="customer-empty-title">لا توجد مصفات متاحة</div>
+            <p class="customer-empty-text">
+                @if (!string.IsNullOrEmpty(selectedArea))
+                {
+                    <text>لا توجد مصفات معتمدة في منطقة «@selectedArea» حالياً.</text>
+                }
+                else if (!string.IsNullOrEmpty(selectedCity))
+                {
+                    <text>لا توجد مصفات معتمدة في «@selectedCity» حالياً.</text>
+                }
+                else
+                {
+                    <text>جرّب تغيير الفترة الزمنية أو اختر منطقة أخرى.</text>
+                }
+            </p>
+        </div>
+    }
+    else
+    {
+        <p class="lots-count-label">@Model.Count() مصف متاح</p>
+        <div class="customer-grid">
+            @foreach (var lot in Model)
+            {
+                var available = lot.ParkingSpots.Count(s => s.IsActive && s.Status == ParkingSpotStatus.Available);
+                <article class="customer-lot-card">
+                    <div class="customer-lot-top">
+                        <div>
+                            <h2>@lot.Name</h2>
+                            <p><i class="bi bi-geo-alt me-1 text-muted"></i>@lot.City</p>
+                        </div>
+                        <span class="customer-badge">@available متاح</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(lot.Area))
+                    {
+                        <div class="lot-area-badge">
+                            <i class="bi bi-geo-alt-fill me-1"></i>@lot.Area
+                        </div>
+                    }
+                    <div class="customer-lot-address">@lot.Address</div>
+                    <div class="customer-lot-meta">
+                        <span><i class="bi bi-clock me-1"></i>@lot.OpeningTime.ToString(@"hh\:mm") – @lot.ClosingTime.ToString(@"hh\:mm")</span>
+                        <strong>@lot.HourlyRate.ToString("0.00") د.أ / ساعة</strong>
+                    </div>
+                    <a class="btn primary-btn"
+                       asp-action="Details"
+                       asp-route-id="@lot.Id"
+                       asp-route-startTime="@startTime"
+                       asp-route-endTime="@endTime">
+                        عرض المواقف
+                    </a>
+                </article>
+            }
+        </div>
+    }
+</div>

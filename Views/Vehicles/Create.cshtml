@@ -1,0 +1,59 @@
+@model ParkingReservation.Models.Vehicle
+@{
+    ViewData["Title"] = "إضافة مركبة";
+    var returnUrl = ViewBag.ReturnUrl as string;
+    var fromReservation = !string.IsNullOrEmpty(returnUrl);
+}
+
+<div class="customer-shell">
+    <div class="customer-header">
+        <div>
+            <div class="customer-kicker">إدارة المركبات</div>
+            <h1 class="customer-title">إضافة مركبة جديدة</h1>
+            @if (fromReservation)
+            {
+                <p class="customer-subtitle">أضف مركبتك أولاً وستعود تلقائياً لإتمام الحجز.</p>
+            }
+        </div>
+        <a class="btn btn-outline-secondary"
+           href="@(fromReservation ? returnUrl : Url.Action("Index"))">
+            @(fromReservation ? "رجوع للحجز" : "رجوع")
+        </a>
+    </div>
+
+    @if (fromReservation)
+    {
+        <div class="filter-time-hint mb-3">
+            <i class="bi bi-info-circle-fill" style="font-size:1.1rem;flex-shrink:0"></i>
+            <span>يجب إضافة مركبة واحدة على الأقل قبل إتمام الحجز. بعد الإضافة ستعود تلقائياً لصفحة الحجز.</span>
+        </div>
+    }
+
+    <section class="customer-panel">
+        <form method="post" class="p-3 row g-3">
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+
+            <div class="col-md-6">
+                <label asp-for="PlateNumber" class="form-label fw-bold">رقم اللوحة *</label>
+                <input asp-for="PlateNumber" class="form-control auth-input" placeholder="مثال: أ ب ج 1234" />
+                <span asp-validation-for="PlateNumber" class="text-danger small"></span>
+            </div>
+
+            <partial name="_VehicleFormFields" model="Model" />
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn primary-btn">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    @(fromReservation ? "إضافة والمتابعة للحجز" : "إضافة المركبة")
+                </button>
+                <a class="btn btn-outline-secondary"
+                   href="@(fromReservation ? returnUrl : Url.Action("Index"))">إلغاء</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
